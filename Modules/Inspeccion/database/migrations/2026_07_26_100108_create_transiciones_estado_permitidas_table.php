@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('estado_destino_id');
             $table->timestamps();
 
-            $table->index(['tipo_catalogo', 'estado_origen_id']);
+            $table->index(['tipo_catalogo', 'estado_origen_id'], 'transiciones_estado_tipo_origen_idx');
         });
     }
 

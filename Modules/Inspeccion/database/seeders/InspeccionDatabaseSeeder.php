@@ -22,6 +22,7 @@ class InspeccionDatabaseSeeder extends Seeder
             ResultadoChecklistSeeder::class,
             TransicionEstadoPermitidaSeeder::class,
             ChecklistIec61439Seeder::class,
+            SeguimientoIntegracionTablerosSeeder::class,
         ]);
     }
 }

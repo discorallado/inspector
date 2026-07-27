@@ -10,10 +10,13 @@ class GrupoHitoSeeder extends Seeder
     public function run(): void
     {
         collect([
-            'Recepción de Materiales',
             'Armado de Tablero',
-            'Cableado',
+            'Montaje de Protecciones',
+            'Fabricación y Montaje de Barras',
+            'Alambrado del Tablero',
+            'Rotulación',
             'Pruebas FAT',
+            'Embalaje',
             'Despacho',
         ])->each(fn (string $nombre, int $orden) => GrupoHito::query()->firstOrCreate(
             ['nombre' => $nombre],
