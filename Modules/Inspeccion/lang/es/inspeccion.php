@@ -1,0 +1,160 @@
+<?php
+
+return [
+    'navigation' => [
+        'cluster_inspeccion_calidad' => 'Inspección de Calidad',
+        'cluster_configuracion' => 'Configuración',
+        'grupo_seguimiento_tableros' => 'Seguimiento de Tableros',
+        'grupo_inspeccion_calidad' => 'Inspección de Calidad',
+        'grupo_control_cambios' => 'Control de Cambios',
+        'grupo_maquina_estados' => 'Máquina de Estados',
+    ],
+
+    'proyecto' => [
+        'singular' => 'Proyecto',
+        'plural' => 'Proyectos',
+        'campos' => [
+            'nombre' => 'Nombre',
+        ],
+    ],
+
+    'tablero' => [
+        'singular' => 'Tablero',
+        'plural' => 'Tableros',
+        'campos' => [
+            'proyecto' => 'Proyecto',
+            'tag' => 'Tag',
+            'nombre' => 'Nombre',
+            'fabricante' => 'Fabricante',
+            'oc_contrato' => 'OC / Contrato',
+            'avance_global' => 'Avance global',
+        ],
+    ],
+
+    'tablero_hito' => [
+        'singular' => 'Hito',
+        'plural' => 'Hitos',
+        'campos' => [
+            'grupo_hito' => 'Grupo',
+            'estado_avance' => 'Estado',
+            'item' => 'Ítem',
+            'nombre' => 'Nombre',
+            'peso' => 'Peso',
+            'plan_inicio' => 'Inicio planificado',
+            'plan_fin' => 'Fin planificado',
+            'real_inicio' => 'Inicio real',
+            'real_fin' => 'Fin real',
+            'responsable' => 'Responsable',
+            'observaciones' => 'Observaciones',
+        ],
+    ],
+
+    'visita_inspeccion' => [
+        'singular' => 'Visita de Inspección',
+        'plural' => 'Visitas de Inspección',
+        'campos' => [
+            'proyecto' => 'Proyecto',
+            'inspector' => 'Inspector',
+            'fecha' => 'Fecha',
+            'tableros' => 'Tableros visitados',
+            'observaciones_generales' => 'Observaciones generales',
+            'estado_general' => 'Estado general',
+        ],
+        'estado_general' => [
+            'sin_observaciones' => 'Sin Observaciones',
+            'todo_cerrado' => 'Todo Cerrado',
+            'con_pendientes' => 'Con Pendientes',
+            'pendientes_criticos' => 'Pendientes Críticos',
+        ],
+    ],
+
+    'observacion' => [
+        'singular' => 'Observación',
+        'plural' => 'Observaciones',
+        'campos' => [
+            'visita_inspeccion' => 'Visita',
+            'tablero' => 'Tablero',
+            'tablero_hito' => 'Hito',
+            'especialidad' => 'Especialidad',
+            'tipo_observacion' => 'Tipo',
+            'severidad' => 'Severidad',
+            'descripcion' => 'Descripción',
+            'responsable' => 'Responsable',
+            'fecha_compromiso' => 'Fecha compromiso',
+            'estado_observacion' => 'Estado',
+            'fecha_cierre' => 'Fecha cierre',
+            'observacion_cierre' => 'Observación de cierre',
+            'dias_abierta' => 'Días abierta',
+        ],
+        'acciones' => [
+            'cerrar' => 'Cerrar observación',
+        ],
+        'vencida' => 'Vencida',
+    ],
+
+    'control_cambio' => [
+        'singular' => 'Control de Cambio',
+        'plural' => 'Control de Cambios',
+        'campos' => [
+            'tablero' => 'Tablero',
+            'estado_cambio' => 'Estado',
+            'descripcion' => 'Descripción',
+            'responsable' => 'Responsable',
+            'fecha' => 'Fecha',
+        ],
+        'acciones' => [
+            'aprobar' => 'Aprobar',
+            'rechazar' => 'Rechazar',
+            'implementar' => 'Marcar implementado',
+        ],
+    ],
+
+    'checklist' => [
+        'item_library' => [
+            'singular' => 'Ítem de Checklist',
+            'plural' => 'Ítems de Checklist',
+        ],
+        'template' => [
+            'singular' => 'Plantilla de Checklist',
+            'plural' => 'Plantillas de Checklist',
+        ],
+        'ejecucion' => [
+            'singular' => 'Checklist de Inspección',
+            'plural' => 'Checklists de Inspección',
+        ],
+        'campos' => [
+            'categoria' => 'Categoría',
+            'item' => 'Ítem',
+            'referencia_normativa' => 'Referencia normativa',
+            'resultado' => 'Resultado',
+            'observacion' => 'Observación',
+        ],
+    ],
+
+    'catalogos' => [
+        'grupo_hito' => 'Grupos de Hito',
+        'estado_avance' => 'Estados de Avance',
+        'especialidad' => 'Especialidades',
+        'tipo_observacion' => 'Tipos de Observación',
+        'severidad' => 'Severidades',
+        'estado_observacion' => 'Estados de Observación',
+        'estado_cambio' => 'Estados de Cambio',
+        'resultado_checklist' => 'Resultados de Checklist',
+        'transicion_estado_permitida' => 'Transiciones de Estado Permitidas',
+        'campos' => [
+            'nombre' => 'Nombre',
+            'codigo' => 'Código',
+            'orden' => 'Orden',
+            'activo' => 'Activo',
+            'valor' => 'Valor',
+            'excluye_calculo' => 'Excluye del cálculo',
+            'requiere_severidad' => 'Requiere severidad',
+            'es_terminal' => 'Es terminal',
+        ],
+    ],
+
+    'errores' => [
+        'transicion_no_permitida' => 'La transición de :origen a :destino no está permitida.',
+        'severidad_requerida' => 'Este tipo de observación requiere severidad.',
+    ],
+];

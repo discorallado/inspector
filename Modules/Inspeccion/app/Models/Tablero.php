@@ -1,0 +1,65 @@
+<?php
+
+namespace Modules\Inspeccion\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Tablero extends Model
+{
+    use HasFactory;
+
+    protected $table = 'tableros';
+
+    protected $fillable = [
+        'organization_id',
+        'proyecto_id',
+        'tag',
+        'nombre',
+        'fabricante',
+        'oc_contrato',
+        'avance_global',
+        'avance_calculado_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'avance_global' => 'decimal:2',
+            'avance_calculado_at' => 'datetime',
+        ];
+    }
+
+    public function proyecto(): BelongsTo
+    {
+        return $this->belongsTo(Proyecto::class);
+    }
+
+    public function tableroHitos(): HasMany
+    {
+        return $this->hasMany(TableroHito::class);
+    }
+
+    public function observaciones(): HasMany
+    {
+        return $this->hasMany(Observacion::class);
+    }
+
+    public function controlCambios(): HasMany
+    {
+        return $this->hasMany(ControlCambio::class);
+    }
+
+    public function visitasInspeccion(): BelongsToMany
+    {
+        return $this->belongsToMany(VisitaInspeccion::class, 'tablero_visita_inspeccion');
+    }
+
+    public function checklistEjecuciones(): HasMany
+    {
+        return $this->hasMany(ChecklistEjecucion::class);
+    }
+}

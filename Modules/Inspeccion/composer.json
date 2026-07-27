@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/inspeccion",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Inspeccion\\": "app/",
+            "Modules\\Inspeccion\\Database\\Factories\\": "database/factories/",
+            "Modules\\Inspeccion\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Inspeccion\\Tests\\": "tests/"
+        }
+    }
+}

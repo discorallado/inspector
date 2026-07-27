@@ -1,0 +1,11 @@
+{
+    "name": "Inspeccion",
+    "alias": "inspeccion",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Inspeccion\\Providers\\InspeccionServiceProvider"
+    ],
+    "files": []
+}
