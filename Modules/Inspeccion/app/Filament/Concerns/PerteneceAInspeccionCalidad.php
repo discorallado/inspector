@@ -6,5 +6,8 @@ use Modules\Inspeccion\Filament\Clusters\InspeccionCalidad\InspeccionCalidadClus
 
 trait PerteneceAInspeccionCalidad
 {
-    protected static ?string $cluster = InspeccionCalidadCluster::class;
+    public static function getCluster(): ?string
+    {
+        return InspeccionCalidadCluster::class;
+    }
 }

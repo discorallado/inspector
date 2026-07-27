@@ -1,58 +1,62 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Inspección y Avance de Tableros
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación Laravel + Filament que reemplaza 3 planillas Excel de un proyecto
+de fabricación/integración de tableros eléctricos:
 
-## About Laravel
+1. Avance ponderado de fabricación por tablero (hitos + Gantt).
+2. Registro de observaciones de visitas de inspección de calidad (no
+   conformidades, consultas al integrador, sugerencias).
+3. Control de cambios de ingeniería/fabricación.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Todo el código vive dentro de `Modules/Inspeccion/` (paquete
+`nwidart/laravel-modules`). Este repo es **temporal/aislado a propósito**: una
+vez validado, el módulo se copia completo al PMIS real (`axon`). El contexto
+completo de esta decisión y las convenciones de trabajo están en
+[`CLAUDE.md`](CLAUDE.md).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Documentación
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Requerimiento funcional original: [`Modules/Inspeccion/docs/0002-seguimiento-inspeccion-tableros.md`](Modules/Inspeccion/docs/0002-seguimiento-inspeccion-tableros.md)
+- Decisiones de arquitectura (ADR): [`docs/adr/`](docs/adr/)
 
-## Learning Laravel
+## Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.3+ · Laravel 13 · Filament 5
+- `nwidart/laravel-modules` para el aislamiento del módulo
+- Pest (tests), Pint (estilo)
+- SQLite para desarrollo local
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Puesta en marcha
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm install && npm run build
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+El panel de administración queda en `/admin`.
 
-## Contributing
+## Navegación del panel
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Menú | Contenido |
+|---|---|
+| **Tableros** | Avance ponderado por tablero, hitos, cambios y observaciones asociadas. `Proyecto` (stub) se crea inline desde el selector. |
+| **Inspección de Calidad** | Observaciones/sugerencias/consultas (vista principal) y Visitas de Inspección con su checklist IEC 61439. |
+| **Control de Cambios** | Flujo Propuesto → Aprobado/Rechazado → Implementado. |
+| **Configuración** | Catálogos del sistema (estados, tipos, severidades, checklist maestro, transiciones permitidas). Solo `super_admin`. |
 
-## Code of Conduct
+## Roles
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+`super_admin`, `ingeniero`, `supervisor`, `tecnico`, `calidad`. La matriz de
+permisos vive en `Modules/Inspeccion/config/inspeccion.php` (Gates simples,
+no hay paquete de permisos en este repo — ver `CLAUDE.md` §2).
 
-## Security Vulnerabilities
+## Tests y estilo
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+./vendor/bin/pest
+./vendor/bin/pint
+```

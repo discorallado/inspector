@@ -6,5 +6,8 @@ use Modules\Inspeccion\Filament\Clusters\Configuracion\ConfiguracionCluster;
 
 trait PerteneceAConfiguracion
 {
-    protected static ?string $cluster = ConfiguracionCluster::class;
+    public static function getCluster(): ?string
+    {
+        return ConfiguracionCluster::class;
+    }
 }

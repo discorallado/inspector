@@ -49,13 +49,13 @@ it('carga la edición de tablero con sus relation managers', function () {
 });
 
 it('carga la edición de visita de inspección con sus relation managers', function () {
-    $this->actingAs($this->admin)->get("/admin/visita-inspeccions/{$this->visita->id}/edit")->assertSuccessful();
+    $this->actingAs($this->admin)->get("/admin/inspeccion-calidad/visita-inspeccions/{$this->visita->id}/edit")->assertSuccessful();
 });
 
 it('carga la edición de checklist ejecucion con sus ítems', function () {
-    $this->actingAs($this->admin)->get("/admin/checklist-ejecucions/{$this->ejecucion->id}/edit")->assertSuccessful();
+    $this->actingAs($this->admin)->get("/admin/inspeccion-calidad/checklist-ejecucions/{$this->ejecucion->id}/edit")->assertSuccessful();
 });
 
 it('carga la edición de checklist template con sus ítems', function () {
-    $this->actingAs($this->admin)->get('/admin/checklist-templates/'.ChecklistTemplate::first()->id.'/edit')->assertSuccessful();
+    $this->actingAs($this->admin)->get('/admin/configuracion/checklist-templates/'.ChecklistTemplate::first()->id.'/edit')->assertSuccessful();
 });
