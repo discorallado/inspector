@@ -122,6 +122,7 @@ return [
             'aprobar' => 'Aprobar',
             'rechazar' => 'Rechazar',
             'implementar' => 'Marcar implementado',
+            'desimplementar' => 'Revertir implementación',
         ],
     ],
 

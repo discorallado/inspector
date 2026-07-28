@@ -1,0 +1,25 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+/*
+ * Sin este archivo, el panel admin usa el CSS ya compilado de Filament
+ * (public/css/filament/filament/app.css), que solo trae las clases que
+ * los componentes core de Filament usan. Cualquier vista Blade fuera de
+ * ahí — el kanban de relaticle/flowforge, o las páginas custom del
+ * módulo (Vista de Tablero, checklist táctil) — usa clases Tailwind que
+ * nunca se compilan a ningún stylesheet y se ven sin estilo. Ver ADR
+ * 0006.
+ */
+@source '../../../../app/Filament';
+@source '../../../../Modules/Inspeccion/app/Filament';
+@source '../../../../Modules/Inspeccion/resources/views';
+@source '../../../../vendor/relaticle/flowforge/resources/views';
+
+/*
+ * La paleta de color todavía no está definida (ver ADR 0006 §3.2) — se
+ * difiere a propósito. El punto único de cambio para eso es
+ * AdminPanelProvider::panel()->colors([...]), no este archivo: Filament
+ * genera las variables --primary-500, --success-500, etc. a partir de ahí, y
+ * cualquier clase Tailwind semántica (text-primary-600, bg-success-500)
+ * usada en las vistas custom del módulo hereda el cambio automáticamente.
+ * No se define acá un sistema de tokens paralelo.
+ */

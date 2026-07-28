@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverResources(in: module_path('Inspeccion', 'app/Filament/Resources'), for: 'Modules\Inspeccion\Filament\Resources')
             ->discoverClusters(in: module_path('Inspeccion', 'app/Filament/Clusters'), for: 'Modules\Inspeccion\Filament\Clusters')

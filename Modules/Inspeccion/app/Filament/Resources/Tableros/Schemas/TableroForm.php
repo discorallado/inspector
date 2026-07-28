@@ -6,7 +6,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 
 class TableroForm
 {
@@ -29,7 +29,7 @@ class TableroForm
                 ->label(__('inspeccion.tablero.campos.tag'))
                 ->required()
                 ->unique(
-                    modifyRuleUsing: fn (Builder $rule, Get $get) => $rule->where('proyecto_id', $get('proyecto_id')),
+                    modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('proyecto_id', $get('proyecto_id')),
                     ignoreRecord: true,
                 ),
             TextInput::make('nombre')
