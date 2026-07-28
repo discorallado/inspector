@@ -25,8 +25,15 @@ class ItemsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('item')
-            ->reorderable('orden')
-            ->defaultSort('orden')
+            // Calificado porque tanto la tabla pivote (checklist_template_items)
+            // como la relacionada (checklist_item_libraries) tienen columna
+            // `orden` — sin calificar, el ORDER BY queda ambiguo para MariaDB
+            // en cuanto la relación hace join (ChecklistTemplate::items() ya
+            // ordena por el pivote). Filament recorta el prefijo solo al
+            // persistir el reorder contra el pivote, así que calificar acá
+            // no rompe el guardado.
+            ->reorderable('checklist_template_items.orden')
+            ->defaultSort('checklist_template_items.orden')
             ->columns([
                 TextColumn::make('categoria')
                     ->label(__('inspeccion.checklist.campos.categoria')),
