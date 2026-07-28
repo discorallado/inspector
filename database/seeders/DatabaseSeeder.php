@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
             'role' => 'super_admin',
+            'password' => bcrypt('password'),
         ]);
 
         $this->call(InspeccionDatabaseSeeder::class);
