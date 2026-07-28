@@ -104,8 +104,10 @@ return [
         ],
         'acciones' => [
             'cerrar' => 'Cerrar observación',
+            'ver_kanban' => 'Ver Kanban',
         ],
         'vencida' => 'Vencida',
+        'kanban_titulo' => 'Kanban de Observaciones',
     ],
 
     'control_cambio' => [
