@@ -46,12 +46,21 @@ concreto" para PR2.
   posición base (`DecimalPosition::after()`/`forEmptyColumn()`) a toda
   Observacion nueva — antes quedaban con `posicion = NULL` indefinidamente
   si no se creaban arrastrando una card en el board.
-- 8 tests nuevos en total (`ObservacionKanbanTest`, incluye card
-  soft-deleted, cardId inexistente y posición base al crear). Suite
-  completa: **74/74 en verde**, Pint limpio. ADR 0004 documenta todo.
-- Pendiente de validar (riesgo heredado del ADR 0003 §7): soporte táctil
-  del drag-and-drop en tablet real — no probado todavía, solo el flujo
-  servidor vía tests.
+- **`/qa` corrido en modo completo**: sin bugs. 5 casos nuevos (mover a
+  Informativa, acción "Cerrar" end-to-end desde una card del board con
+  fill+call real, tecnico bloqueado de mountear "Cerrar" sobre una card
+  puntual, Observacion sin `tablero_id` no rompe el render, HTML del
+  board incluye el asset de Flowforge + las 3 columnas del catálogo).
+  `ObservacionKanbanTest` queda con 14 tests en total. Suite completa del
+  módulo: **79 passed + 1 risky** (no es una falla, solo una aserción sin
+  `expect()` explícito en la cadena), Pint limpio.
+- **Limitación explícita**: no hay herramienta de navegador/screenshot en
+  este entorno — no se verificó visualmente el drag-and-drop real, ni
+  errores de consola JS, ni el click-through del modal "Cerrar". Todo lo
+  de arriba se probó a nivel HTTP/Livewire (lo más cercano posible sin
+  navegador). **Pendiente real**: probar en un navegador/tablet real
+  antes de considerar el drag-and-drop 100% validado (riesgo heredado
+  del ADR 0003 §7).
 - **PR1 cerrado.** Listo para abrir PR en GitHub cuando se decida.
 
 ## Estado histórico (sesión 2026-07-28)
