@@ -33,4 +33,9 @@ class ChecklistEjecucionItemPolicy
     {
         return Gate::allows('checklist_ejecucion.completar');
     }
+
+    public function deleteAny(User $user): bool
+    {
+        return Gate::allows('checklist_ejecucion.completar');
+    }
 }

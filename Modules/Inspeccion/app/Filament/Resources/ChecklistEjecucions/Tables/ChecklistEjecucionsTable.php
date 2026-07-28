@@ -2,11 +2,9 @@
 
 namespace Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 
 class ChecklistEjecucionsTable
 {
@@ -25,14 +23,13 @@ class ChecklistEjecucionsTable
                     ->label(__('inspeccion.checklist.campos.item'))
                     ->counts('items'),
             ])
-            ->filters([])
+            ->filters(AccionesBorradoLogico::filtros())
             ->recordActions([
-                EditAction::make(),
+                AccionesBorradoLogico::editar(),
+                ...AccionesBorradoLogico::registro(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                AccionesBorradoLogico::acciones(),
             ]);
     }
 }

@@ -31,5 +31,7 @@ return [
         'control_cambio.decidir' => ['super_admin', 'supervisor'],
         'control_cambio.implementar' => ['super_admin', 'ingeniero'],
         'catalogo.gestionar' => ['super_admin'],
+        'auditoria.purgar' => ['super_admin'],
+        'usuario.gestionar' => ['super_admin'],
     ],
 ];

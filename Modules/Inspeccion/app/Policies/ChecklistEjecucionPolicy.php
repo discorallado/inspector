@@ -33,4 +33,34 @@ class ChecklistEjecucionPolicy
     {
         return Gate::allows('checklist_ejecucion.completar');
     }
+
+    public function restore(User $user, ChecklistEjecucion $ejecucion): bool
+    {
+        return Gate::allows('checklist_ejecucion.completar');
+    }
+
+    public function forceDelete(User $user, ChecklistEjecucion $ejecucion): bool
+    {
+        return Gate::allows('auditoria.purgar');
+    }
+
+    /**
+     * Filament autoriza las Bulk*Action contra estas abilities *Any(), no
+     * contra sus pares en singular. Sin ellas, Filament falla abierto
+     * (permite a cualquier usuario autenticado) porque el método no existe.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return Gate::allows('checklist_ejecucion.completar');
+    }
+
+    public function restoreAny(User $user): bool
+    {
+        return Gate::allows('checklist_ejecucion.completar');
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return Gate::allows('auditoria.purgar');
+    }
 }

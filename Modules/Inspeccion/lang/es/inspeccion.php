@@ -8,6 +8,22 @@ return [
         'grupo_inspeccion_calidad' => 'Inspección de Calidad',
         'grupo_control_cambios' => 'Control de Cambios',
         'grupo_maquina_estados' => 'Máquina de Estados',
+        'grupo_usuarios' => 'Usuarios y Accesos',
+    ],
+
+    'usuario' => [
+        'singular' => 'Usuario',
+        'plural' => 'Usuarios',
+        'sin_rol' => 'Sin rol asignado',
+        'campos' => [
+            'name' => 'Nombre',
+            'email' => 'Correo electrónico',
+            'password' => 'Contraseña',
+            'role' => 'Rol',
+        ],
+        'ayuda' => [
+            'password_opcional' => 'Dejar en blanco para no cambiar la contraseña actual.',
+        ],
     ],
 
     'proyecto' => [

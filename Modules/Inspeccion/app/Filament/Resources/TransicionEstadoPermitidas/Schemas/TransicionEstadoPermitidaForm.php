@@ -3,8 +3,12 @@
 namespace Modules\Inspeccion\Filament\Resources\TransicionEstadoPermitidas\Schemas;
 
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
+use Modules\Inspeccion\Models\EstadoAvance;
+use Modules\Inspeccion\Models\EstadoCambio;
+use Modules\Inspeccion\Models\EstadoObservacion;
 use Modules\Inspeccion\Models\TransicionEstadoPermitida;
 
 class TransicionEstadoPermitidaForm
@@ -19,16 +23,33 @@ class TransicionEstadoPermitidaForm
                     TransicionEstadoPermitida::TIPO_ESTADO_OBSERVACION => __('inspeccion.catalogos.estado_observacion'),
                     TransicionEstadoPermitida::TIPO_ESTADO_CAMBIO => __('inspeccion.catalogos.estado_cambio'),
                 ])
+                ->live()
                 ->required(),
-            TextInput::make('estado_origen_id')
-                ->label('ID estado origen')
+            Select::make('estado_origen_id')
+                ->label('Estado origen')
                 ->helperText('Vacío = estado inicial permitido al crear el registro.')
-                ->numeric(),
-            TextInput::make('estado_destino_id')
-                ->label('ID estado destino')
-                ->helperText('ID de la fila del catálogo seleccionado arriba (ver su listado para el ID).')
-                ->required()
-                ->numeric(),
+                ->options(fn (Get $get) => self::opciones($get('tipo_catalogo')))
+                ->disabled(fn (Get $get) => blank($get('tipo_catalogo')))
+                ->searchable(),
+            Select::make('estado_destino_id')
+                ->label('Estado destino')
+                ->options(fn (Get $get) => self::opciones($get('tipo_catalogo')))
+                ->disabled(fn (Get $get) => blank($get('tipo_catalogo')))
+                ->searchable()
+                ->required(),
         ]);
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    private static function opciones(?string $tipoCatalogo): Collection
+    {
+        return match ($tipoCatalogo) {
+            TransicionEstadoPermitida::TIPO_ESTADO_AVANCE => EstadoAvance::query()->pluck('nombre', 'id'),
+            TransicionEstadoPermitida::TIPO_ESTADO_OBSERVACION => EstadoObservacion::query()->pluck('nombre', 'id'),
+            TransicionEstadoPermitida::TIPO_ESTADO_CAMBIO => EstadoCambio::query()->pluck('nombre', 'id'),
+            default => collect(),
+        };
     }
 }

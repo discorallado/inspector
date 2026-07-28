@@ -2,14 +2,12 @@
 
 namespace Modules\Inspeccion\Filament\Resources\Observacions\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Filament\Support\ObservacionActions;
 use Modules\Inspeccion\Models\Especialidad;
 use Modules\Inspeccion\Models\EstadoObservacion;
@@ -63,15 +61,15 @@ class ObservacionsTable
                 Filter::make('vencidas')
                     ->label(__('inspeccion.observacion.vencida'))
                     ->query(fn (Builder $query) => $query->vencidas()),
+                ...AccionesBorradoLogico::filtros(),
             ])
             ->recordActions([
                 ...ObservacionActions::todas(),
-                EditAction::make(),
+                AccionesBorradoLogico::editar(),
+                ...AccionesBorradoLogico::registro(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                AccionesBorradoLogico::acciones(),
             ]);
     }
 }

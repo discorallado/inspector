@@ -2,11 +2,9 @@
 
 namespace Modules\Inspeccion\Filament\Resources\VisitaInspeccions\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Models\VisitaInspeccion;
 
 class VisitaInspeccionsTable
@@ -34,14 +32,13 @@ class VisitaInspeccionsTable
                     ->state(fn (VisitaInspeccion $record) => __('inspeccion.visita_inspeccion.estado_general.'.$record->estadoGeneral()))
                     ->badge(),
             ])
-            ->filters([])
+            ->filters(AccionesBorradoLogico::filtros())
             ->recordActions([
-                EditAction::make(),
+                AccionesBorradoLogico::editar(),
+                ...AccionesBorradoLogico::registro(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                AccionesBorradoLogico::acciones(),
             ]);
     }
 }

@@ -30,7 +30,7 @@ class ObservacionActions
         return Action::make('cerrar')
             ->label(__('inspeccion.observacion.acciones.cerrar'))
             ->color('success')
-            ->visible(fn (Observacion $record) => Gate::allows('observacion.cerrar') && ! $record->estadoObservacion->es_terminal)
+            ->visible(fn (Observacion $record) => Gate::allows('observacion.cerrar') && ! $record->estadoObservacion->es_terminal && ! AccionesBorradoLogico::esTrashed($record))
             ->form([
                 Select::make('estado_observacion_id')
                     ->label(__('inspeccion.observacion.campos.estado_observacion'))

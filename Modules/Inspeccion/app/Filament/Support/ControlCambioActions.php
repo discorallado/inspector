@@ -28,7 +28,7 @@ class ControlCambioActions
             ->label(__('inspeccion.control_cambio.acciones.aprobar'))
             ->color('success')
             ->requiresConfirmation()
-            ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.decidir') && $record->estadoCambio->codigo === 'propuesto')
+            ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.decidir') && $record->estadoCambio->codigo === 'propuesto' && ! AccionesBorradoLogico::esTrashed($record))
             ->action(fn (ControlCambio $record) => $record->update([
                 'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'aprobado')->value('id'),
             ]));
@@ -40,7 +40,7 @@ class ControlCambioActions
             ->label(__('inspeccion.control_cambio.acciones.rechazar'))
             ->color('danger')
             ->requiresConfirmation()
-            ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.decidir') && in_array($record->estadoCambio->codigo, ['propuesto', 'aprobado'], true))
+            ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.decidir') && in_array($record->estadoCambio->codigo, ['propuesto', 'aprobado'], true) && ! AccionesBorradoLogico::esTrashed($record))
             ->action(fn (ControlCambio $record) => $record->update([
                 'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'rechazado')->value('id'),
             ]));
@@ -52,7 +52,7 @@ class ControlCambioActions
             ->label(__('inspeccion.control_cambio.acciones.implementar'))
             ->color('primary')
             ->requiresConfirmation()
-            ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.implementar') && $record->estadoCambio->codigo === 'aprobado')
+            ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.implementar') && $record->estadoCambio->codigo === 'aprobado' && ! AccionesBorradoLogico::esTrashed($record))
             ->action(fn (ControlCambio $record) => $record->update([
                 'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'implementado')->value('id'),
             ]));

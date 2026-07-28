@@ -33,4 +33,9 @@ class ProyectoPolicy
     {
         return Gate::allows('tablero.gestionar');
     }
+
+    public function deleteAny(User $user): bool
+    {
+        return Gate::allows('tablero.gestionar');
+    }
 }

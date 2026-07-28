@@ -33,4 +33,34 @@ class ControlCambioPolicy
     {
         return Gate::allows('control_cambio.proponer');
     }
+
+    public function restore(User $user, ControlCambio $controlCambio): bool
+    {
+        return Gate::allows('control_cambio.proponer');
+    }
+
+    public function forceDelete(User $user, ControlCambio $controlCambio): bool
+    {
+        return Gate::allows('auditoria.purgar');
+    }
+
+    /**
+     * Filament autoriza las Bulk*Action contra estas abilities *Any(), no
+     * contra sus pares en singular. Sin ellas, Filament falla abierto
+     * (permite a cualquier usuario autenticado) porque el método no existe.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return Gate::allows('control_cambio.proponer');
+    }
+
+    public function restoreAny(User $user): bool
+    {
+        return Gate::allows('control_cambio.proponer');
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return Gate::allows('auditoria.purgar');
+    }
 }

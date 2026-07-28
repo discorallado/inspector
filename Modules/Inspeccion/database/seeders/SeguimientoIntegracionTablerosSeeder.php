@@ -144,7 +144,12 @@ class SeguimientoIntegracionTablerosSeeder extends Seeder
 
                 [$planInicio, $planFin] = $planGrupos[$definicion['grupo']];
 
-                TableroHito::query()->updateOrCreate(
+                // withoutEvents: esta es una carga histórica que puede nacer
+                // directamente en Completado/En proceso (refleja el avance
+                // real al momento de la planilla), no una transición hecha
+                // por un usuario. TransicionEstadoGuard solo debe validar
+                // transiciones de negocio en vivo, no un import de una vez.
+                TableroHito::withoutEvents(fn () => TableroHito::query()->updateOrCreate(
                     ['tablero_id' => $tablero->id, 'item' => $definicion['item']],
                     [
                         'grupo_hito_id' => $grupos[$definicion['grupo']],
@@ -155,7 +160,7 @@ class SeguimientoIntegracionTablerosSeeder extends Seeder
                         'plan_fin' => $planFin,
                         'responsable' => $definicion['responsable'],
                     ],
-                );
+                ));
             }
         }
 

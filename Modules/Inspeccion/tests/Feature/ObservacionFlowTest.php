@@ -7,6 +7,7 @@ use Modules\Inspeccion\Database\Seeders\EstadoObservacionSeeder;
 use Modules\Inspeccion\Database\Seeders\SeveridadSeeder;
 use Modules\Inspeccion\Database\Seeders\TipoObservacionSeeder;
 use Modules\Inspeccion\Database\Seeders\TransicionEstadoPermitidaSeeder;
+use Modules\Inspeccion\Exceptions\SeveridadRequeridaException;
 use Modules\Inspeccion\Exceptions\TransicionEstadoInvalidaException;
 use Modules\Inspeccion\Models\EstadoObservacion;
 use Modules\Inspeccion\Models\Observacion;
@@ -51,6 +52,14 @@ it('crea una observación de tipo Observación a Subsanar con severidad y la cie
     ]);
 
     expect($observacion->refresh()->estadoObservacion->codigo)->toBe('subsanada_ok');
+});
+
+it('no permite crear una Observación a Subsanar sin severidad, ni siquiera saltándose el form de Filament', function () {
+    expect(fn () => Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'tipo_observacion_id' => TipoObservacion::query()->where('codigo', 'observacion_subsanar')->value('id'),
+        'severidad_id' => null,
+        'estado_observacion_id' => EstadoObservacion::query()->where('codigo', 'pendiente')->value('id'),
+    ]))->toThrow(SeveridadRequeridaException::class);
 });
 
 it('no permite reabrir una observación ya subsanada (estado terminal sin retorno)', function () {

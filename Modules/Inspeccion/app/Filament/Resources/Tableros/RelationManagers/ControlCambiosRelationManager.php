@@ -2,11 +2,7 @@
 
 namespace Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers;
 
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +10,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Filament\Support\ControlCambioActions;
 use Modules\Inspeccion\Models\EstadoCambio;
 
@@ -55,7 +52,7 @@ class ControlCambiosRelationManager extends RelationManager
                     ->label(__('inspeccion.control_cambio.campos.fecha'))
                     ->date(),
             ])
-            ->filters([])
+            ->filters(AccionesBorradoLogico::filtros())
             ->headerActions([
                 CreateAction::make()
                     ->mutateFormDataUsing(function (array $data) {
@@ -66,13 +63,11 @@ class ControlCambiosRelationManager extends RelationManager
             ])
             ->recordActions([
                 ...ControlCambioActions::todas(),
-                EditAction::make(),
-                DeleteAction::make(),
+                AccionesBorradoLogico::editar(),
+                ...AccionesBorradoLogico::registro(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                AccionesBorradoLogico::acciones(),
             ]);
     }
 }

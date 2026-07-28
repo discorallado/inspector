@@ -28,4 +28,5 @@ it('carga cada página de listado del panel sin errores', function (string $url)
     '/admin/configuracion/transicion-estado-permitidas',
     '/admin/configuracion/checklist-item-libraries',
     '/admin/configuracion/checklist-templates',
+    '/admin/configuracion/users',
 ]);

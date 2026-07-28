@@ -41,4 +41,14 @@ class CatalogoPolicy
     {
         return Gate::allows('catalogo.gestionar');
     }
+
+    /**
+     * Filament autoriza DeleteBulkAction contra esta ability *Any(), no
+     * contra delete(). Sin ella, Filament falla abierto (permite) porque el
+     * método no existe en la policy.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return Gate::allows('catalogo.gestionar');
+    }
 }

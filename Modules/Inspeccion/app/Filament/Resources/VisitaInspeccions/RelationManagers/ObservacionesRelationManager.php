@@ -2,11 +2,7 @@
 
 namespace Modules\Inspeccion\Filament\Resources\VisitaInspeccions\RelationManagers;
 
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -16,6 +12,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Filament\Support\ObservacionActions;
 use Modules\Inspeccion\Models\EstadoObservacion;
 use Modules\Inspeccion\Models\TipoObservacion;
@@ -89,7 +86,7 @@ class ObservacionesRelationManager extends RelationManager
                     ->date()
                     ->placeholder('—'),
             ])
-            ->filters([])
+            ->filters(AccionesBorradoLogico::filtros())
             ->headerActions([
                 CreateAction::make()
                     ->mutateFormDataUsing(function (array $data) {
@@ -100,13 +97,11 @@ class ObservacionesRelationManager extends RelationManager
             ])
             ->recordActions([
                 ...ObservacionActions::todas(),
-                EditAction::make(),
-                DeleteAction::make(),
+                AccionesBorradoLogico::editar(),
+                ...AccionesBorradoLogico::registro(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                AccionesBorradoLogico::acciones(),
             ]);
     }
 }

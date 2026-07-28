@@ -2,12 +2,10 @@
 
 namespace Modules\Inspeccion\Filament\Resources\ControlCambios\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Filament\Support\ControlCambioActions;
 use Modules\Inspeccion\Models\EstadoCambio;
 
@@ -38,15 +36,15 @@ class ControlCambiosTable
                 SelectFilter::make('estado_cambio_id')
                     ->label(__('inspeccion.control_cambio.campos.estado_cambio'))
                     ->options(EstadoCambio::query()->pluck('nombre', 'id')),
+                ...AccionesBorradoLogico::filtros(),
             ])
             ->recordActions([
                 ...ControlCambioActions::todas(),
-                EditAction::make(),
+                AccionesBorradoLogico::editar(),
+                ...AccionesBorradoLogico::registro(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                AccionesBorradoLogico::acciones(),
             ]);
     }
 }

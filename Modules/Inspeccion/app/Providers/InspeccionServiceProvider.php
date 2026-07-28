@@ -2,6 +2,7 @@
 
 namespace Modules\Inspeccion\Providers;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Gate;
 use Modules\Inspeccion\Models\ChecklistEjecucion;
@@ -34,6 +35,7 @@ use Modules\Inspeccion\Policies\ObservacionPolicy;
 use Modules\Inspeccion\Policies\ProyectoPolicy;
 use Modules\Inspeccion\Policies\TableroHitoPolicy;
 use Modules\Inspeccion\Policies\TableroPolicy;
+use Modules\Inspeccion\Policies\UserPolicy;
 use Modules\Inspeccion\Policies\VisitaInspeccionPolicy;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
@@ -103,6 +105,7 @@ class InspeccionServiceProvider extends ModuleServiceProvider
         Gate::policy(ControlCambio::class, ControlCambioPolicy::class);
         Gate::policy(ChecklistEjecucion::class, ChecklistEjecucionPolicy::class);
         Gate::policy(ChecklistEjecucionItem::class, ChecklistEjecucionItemPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
 
         foreach ([
             GrupoHito::class,

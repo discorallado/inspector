@@ -2,17 +2,14 @@
 
 namespace Modules\Inspeccion\Filament\Resources\VisitaInspeccions\RelationManagers;
 
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\ChecklistEjecucionResource;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Models\ChecklistEjecucion;
 use Modules\Inspeccion\Models\ChecklistTemplate;
 
@@ -49,7 +46,7 @@ class ChecklistEjecucionesRelationManager extends RelationManager
                     ->label(__('inspeccion.checklist.campos.item'))
                     ->counts('items'),
             ])
-            ->filters([])
+            ->filters(AccionesBorradoLogico::filtros())
             ->headerActions([
                 CreateAction::make()
                     ->using(function (array $data) {
@@ -62,13 +59,11 @@ class ChecklistEjecucionesRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                AccionesBorradoLogico::editar(),
+                ...AccionesBorradoLogico::registro(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                AccionesBorradoLogico::acciones(),
             ]);
     }
 }
