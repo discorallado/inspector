@@ -7,16 +7,43 @@
 ---
 
 ## Última actualización
-2026-07-28
+2026-07-29
 
 ## Módulo / feature en curso
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
-seguimiento en terreno. Arquitectura cerrada (ADR 0003), **implementación
-aún sin empezar** (ver "Próximo paso concreto"). Esta sesión fue de
-reestructuración de navegación + revisión de seguridad/robustez sobre lo
-ya construido, no de avance en el ADR 0003.
+seguimiento en terreno. Arquitectura cerrada (ADR 0003). **PR1 de 8
+implementado** (kanban de Observaciones, ADR 0004) — ver "Próximo paso
+concreto" para PR2.
 
-## Estado actual
+## Estado actual (2026-07-29) — PR1: Kanban de Observaciones
+
+- `relaticle/flowforge ^4.0` instalado. Columna `posicion`
+  (`decimal(20,10)`, no `integer` como decía el borrador del ADR 0003 —
+  corregido al leer el código fuente del paquete) + índice único
+  `(estado_observacion_id, posicion)` en `observaciones`.
+- Nueva página `ObservacionesBoard` (`BoardResourcePage`), ruta adicional
+  de `ObservacionResource` (`/board`), **no reemplaza** el listado actual
+  todavía — eso es una decisión de UX diferida, no de este PR. Botón
+  "Ver Kanban" agregado al header del listado.
+- Columnas del board construidas dinámicamente desde el catálogo
+  `EstadoObservacion` (nunca hardcodeadas).
+- La validación de transición de estado **no se duplicó**: ya vive en
+  `ObservacionObserver::saving()`, y se dispara sola porque Flowforge usa
+  `Eloquent::update()` internamente para mover una card.
+- `moveCard()` sobrescrito solo para agregar
+  `Gate::authorize('observacion.cerrar')` — Flowforge no gatea el
+  movimiento de cards por su cuenta. Ver acceso al board ya viene gratis
+  de `BoardResourcePage` (`ObservacionPolicy::viewAny` → `tablero.ver`).
+- Acción "Cerrar" existente (`ObservacionActions`) reutilizada como
+  acción de card, sin duplicar lógica.
+- 5 tests nuevos (`ObservacionKanbanTest`). Suite completa: **71/71 en
+  verde**, Pint limpio. ADR 0004 documenta la implementación completa.
+- Pendiente de validar (riesgo heredado del ADR 0003 §7): soporte táctil
+  del drag-and-drop en tablet real — no probado todavía, solo el flujo
+  servidor vía tests.
+- **Siguiente:** correr `/revisor` sobre este diff antes de abrir PR.
+
+## Estado histórico (sesión 2026-07-28)
 
 ### Completado ✅ (esta sesión, 2026-07-28)
 
@@ -115,28 +142,49 @@ Suite final: **66/66 tests en verde**, Pint limpio.
   páginas de seguimiento usan un layout con clase CSS modificadora dentro
   del panel `admin` existente.
 - **Catálogos de Configuración**: sin cambios, siguen CRUD clásico.
-- **Modelo de datos**: solo dos columnas nuevas por venir —
-  `observaciones.posicion` y `control_cambios.posicion` (integer nullable,
-  requeridas por Flowforge para el orden del drag-and-drop). Todo lo demás
-  del modelo de datos existente se mantiene intacto.
+- **Modelo de datos**: `observaciones.posicion` ya implementado (PR1, ver
+  arriba) como `decimal(20,10)`, no `integer` como decía este borrador —
+  corregido tras leer el código fuente de Flowforge. `control_cambios.posicion`
+  sigue pendiente (PR2), mismo tipo.
 - **Plan de implementación**: 8 PRs secuenciales, cada uno con sus propios
-  tests Pest (detalle completo en el ADR §6).
+  tests Pest (detalle completo en el ADR §6). **PR1 cerrado** (ver arriba,
+  ADR 0004).
 
 ## Decisiones pendientes
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
-Queda pendiente **empezar la implementación**.
 
 ## Próximo paso concreto
-`/ingeniero` — **PR1: Kanban de Observaciones**. Instalar/configurar
-`relaticle/flowforge`, migración `posicion` en `observaciones`, board
-Filament con columnas por `EstadoObservacion` reutilizando
-`ObservacionActions`, tests Pest (creación de board, movimiento de columna
-respeta `TransicionEstadoGuard`, filtros básicos). Ver detalle en el ADR
-[`0003-rediseno-ux-seguimiento-terreno.md`](Modules/Inspeccion/docs/adr/0003-rediseno-ux-seguimiento-terreno.md) §6.
+Correr `/revisor` sobre el diff de PR1 (kanban de Observaciones) antes de
+abrir su PR en GitHub. Después, `/ingeniero` — **PR2: Kanban de Control de
+Cambios**, mismo patrón que PR1 (migración `posicion` en `control_cambios`,
+board con columnas por `EstadoCambio`, reutilizando `ControlCambioActions`).
+Ver detalle en el ADR
+[`0003-rediseno-ux-seguimiento-terreno.md`](Modules/Inspeccion/docs/adr/0003-rediseno-ux-seguimiento-terreno.md) §6
+y el patrón ya implementado en
+[`0004-kanban-observaciones-flowforge.md`](Modules/Inspeccion/docs/adr/0004-kanban-observaciones-flowforge.md).
 
 ---
 
 ## Historial de sesiones anteriores
+
+<details>
+<summary>2026-07-29 — PR1: Kanban de Observaciones con relaticle/flowforge (ADR 0004)</summary>
+
+Instalado `relaticle/flowforge ^4.0`. Migración `posicion` (decimal 20,10,
+no integer — corregido tras leer el código fuente del paquete instalado)
++ índice único en `observaciones`. Nueva página `ObservacionesBoard`
+(`BoardResourcePage`) registrada como ruta adicional de `ObservacionResource`
+(no reemplaza el listado todavía), con columnas dinámicas desde el catálogo
+`EstadoObservacion` y card actions reutilizando `ObservacionActions`. La
+validación de transición de estado no se duplicó — ya la dispara
+`ObservacionObserver::saving()` porque Flowforge usa `Eloquent::update()`
+internamente. Se sobrescribió `moveCard()` solo para agregar
+`Gate::authorize('observacion.cerrar')` (Flowforge no gatea el movimiento
+por su cuenta); ver el board ya viene gratis vía `ObservacionPolicy::viewAny`.
+5 tests nuevos, suite completa 71/71 en verde, Pint limpio. Pendiente:
+correr `/revisor` y validar drag-and-drop táctil en tablet real.
+
+</details>
 
 <details>
 <summary>2026-07-28 — Reestructuración de navegación + 2 rondas de /revisor (bug de autorización crítico) + gap de usuarios</summary>
