@@ -84,3 +84,32 @@ it('un usuario sin permiso de cerrar observaciones no puede mover cards del kanb
 
     expect($observacion->refresh()->estado_observacion_id)->not->toBe($destino->id);
 });
+
+it('no se puede mover una card que ya fue borrada lógicamente', function () {
+    $user = User::factory()->create(['role' => 'calidad']);
+    $observacion = Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'estado_observacion_id' => EstadoObservacion::query()->where('codigo', 'pendiente')->value('id'),
+    ]);
+    $observacion->delete();
+    $destino = EstadoObservacion::query()->where('codigo', 'subsanada_ok')->first();
+
+    $this->actingAs($user);
+
+    // El SoftDeletes de Observacion ya excluye trashed del scope por defecto
+    // que usa el board, así que Flowforge no encuentra la card y rechaza el
+    // movimiento en vez de revivirla o moverla igual.
+    expect(fn () => Livewire::test(ObservacionesBoard::class)
+        ->call('moveCard', (string) $observacion->id, (string) $destino->id))
+        ->toThrow(InvalidArgumentException::class);
+});
+
+it('mover un cardId inexistente lanza una excepción en vez de fallar en silencio', function () {
+    $user = User::factory()->create(['role' => 'calidad']);
+    $destino = EstadoObservacion::query()->where('codigo', 'subsanada_ok')->first();
+
+    $this->actingAs($user);
+
+    expect(fn () => Livewire::test(ObservacionesBoard::class)
+        ->call('moveCard', '999999', (string) $destino->id))
+        ->toThrow(InvalidArgumentException::class);
+});
