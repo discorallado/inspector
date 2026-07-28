@@ -104,10 +104,8 @@ return [
         ],
         'acciones' => [
             'cerrar' => 'Cerrar observación',
-            'ver_kanban' => 'Ver Kanban',
         ],
         'vencida' => 'Vencida',
-        'kanban_titulo' => 'Kanban de Observaciones',
     ],
 
     'control_cambio' => [
@@ -124,9 +122,8 @@ return [
             'aprobar' => 'Aprobar',
             'rechazar' => 'Rechazar',
             'implementar' => 'Marcar implementado',
-            'ver_kanban' => 'Ver Kanban',
+            'desimplementar' => 'Revertir implementación',
         ],
-        'kanban_titulo' => 'Kanban de Control de Cambios',
     ],
 
     'checklist' => [

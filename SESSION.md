@@ -7,13 +7,58 @@
 ---
 
 ## Última actualización
-2026-07-30
+2026-07-31
 
 ## Módulo / feature en curso
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
-seguimiento en terreno. Arquitectura cerrada (ADR 0003, ampliada por ADR
-0006). **PR1, PR2 y PR3 de 10 implementados** (kanban de Observaciones
-ADR 0004, kanban de Control de Cambios ADR 0005, theme custom ADR 0007)
+seguimiento en terreno. **El usuario pidió revertir el kanban de
+Observaciones/Control de Cambios a tabla + select** (ADR 0008) tras
+probar PR1/PR2 — el kanban como concepto no se descarta, queda para el
+seguimiento de hitos/tareas de `Tablero`, diferido hasta definir la
+integración con `axon` (ver abajo, sección grande nueva). PR3 (theme
+custom, ADR 0007) sigue vigente sin cambios.
+
+## Estado actual (2026-07-31) — ADR 0008: kanban → tabla + select, y pregunta de integración con axon
+
+**Reversión de PR1/PR2** (el usuario probó el resultado real y pidió
+volver a algo "más estático"):
+- Se eliminaron `ObservacionesBoard.php` y `ControlCambiosBoard.php` (páginas,
+  rutas `board`, botones "Ver Kanban"). `relaticle/flowforge` sigue
+  instalado — el usuario quiere un kanban para hitos/tareas de tablero
+  más adelante, no tiene sentido desinstalar y reinstalar.
+- `ObservacionsTable` y `ControlCambiosTable` ganan `SelectColumn` para
+  cambiar el estado inline. Las acciones de `ControlCambio`
+  (aprobar/rechazar/implementar) se agruparon en un `ActionGroup`, más
+  una acción nueva **`desimplementar`** (revierte Implementado ->
+  Aprobado) — nueva transición sembrada `[implementado, aprobado]`.
+- **Mismo hallazgo de seguridad que ya encontró `/revisor` en PR2, esta
+  vez corregido desde el arranque**: confirmado en el código de Filament
+  que `SelectColumn` no respeta Policies — `disabled()` bloquea el save,
+  pero la validación real es que el valor recibido se compara contra
+  `options()`. Para `ControlCambio`, las opciones se filtran por la
+  ability específica de cada destino (no un `Gate::any()` genérico), o
+  un rol con solo `control_cambio.proponer` habría podido
+  aprobar/rechazar/implementar por el select aunque los botones se lo
+  nieguen.
+- Nueva migración (no se editan las de PR1/PR2 ya corridas) que dropea
+  `posicion` de ambas tablas. **Detalle no trivial en MariaDB real**: el
+  único índice que cubría `estado_observacion_id`/`estado_cambio_id`
+  como FK era justo el unique que se estaba borrando (error 1553) — hubo
+  que agregar un índice simple de reemplazo antes. Verificado con
+  `migrate` + `migrate:rollback` reales, no solo que compile.
+- 10 tests nuevos (`ObservacionEstadoSelectTest`, `ControlCambioEstadoSelectTest`),
+  reemplazando los ~28 tests de los kanbans eliminados. Suite completa:
+  **80 passed, 1 risky** (preexistente, sin fallas), Pint limpio.
+
+**Pregunta grande, diferida a propósito — no resuelta todavía**: el
+usuario quiere integrar el seguimiento de avance de `Tablero` con el
+modelo `Proyecto -> Actividad -> Tarea` de `axon`. Sus últimos cambios en
+`axon` (locales, no pusheados) **ya se mergearon a GitHub** durante esta
+sesión — el bloqueo original para diseñar esto ya no existe. Pregunta de
+fondo sin resolver: en `axon` la jerarquía es plana bajo Proyecto; acá
+haría falta `Proyecto -> Tablero (varios) -> Actividades/Tareas que
+pueden diferir entre tableros` — no se diseñó a ciegas, se retoma
+revisando el código real de `axon` ya mergeado.
 — ver "Próximo paso concreto" para PR4.
 
 ## Estado actual (2026-07-30) — PR3: Theme custom de Filament
@@ -250,19 +295,45 @@ Suite final: **66/66 tests en verde**, Pint limpio.
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 
 ## Próximo paso concreto
-Correr `/revisor` sobre PR3 (theme custom) antes de abrir su PR. Después,
-`/ingeniero` — **PR4: autonumeración** de los 10 campos de orden manual
-(9 catálogos simples + `ChecklistTemplateItems.orden`, autocálculo +
-`->reorderable()`) y el backfill de `TableroHito.item` (recalcula los
-234 hitos existentes como `{grupo.orden}.{posición}`). Ver
-[`0006-theme-custom-y-ui-bespoke.md`](Modules/Inspeccion/docs/adr/0006-theme-custom-y-ui-bespoke.md)
-§3.5 y §4 para el detalle y el plan completo de 10 PRs. PR1/PR2/PR3
-siguen pendientes de abrir su PR en GitHub cuando se retome ese trámite
-— no es bloqueante para seguir con PR4.
+Dos caminos en paralelo, según lo que se decida al retomar:
+1. **Revisar el `axon` recién mergeado** para resolver la pregunta de
+   integración `Tablero -> Actividad/Tarea` planteada arriba — esto
+   probablemente reordena o reemplaza el PR4 original (autonumeración de
+   `TableroHito.item`) y el kanban de hitos/tareas diferido, según lo que
+   se decida.
+2. Si se sigue con el plan original mientras tanto: `/ingeniero` — PR4
+   del ADR 0006 (autonumeración de los 9 catálogos simples +
+   `ChecklistTemplateItems.orden`), dejando `TableroHito.item` fuera
+   hasta resolver (1).
+
+Correr `/revisor` sobre PR3 (theme, ADR 0007) y PR de esta sesión (ADR
+0008) antes de abrir sus PR en GitHub — no es bloqueante para seguir.
 
 ---
 
 ## Historial de sesiones anteriores
+
+<details>
+<summary>2026-07-31 — Revierte kanban de Observaciones/Control de Cambios a tabla + select (ADR 0008)</summary>
+
+El usuario probó PR1/PR2 y pidió volver a un cambio de estado "más
+estático": se eliminaron los boards de Flowforge para ambas entidades
+(el paquete queda instalado para un futuro kanban de hitos/tareas de
+Tablero). `SelectColumn` inline reemplaza el cambio de estado; acciones
+de Control de Cambios agrupadas en `ActionGroup` + nueva acción
+`desimplementar`. Mismo hallazgo de autorización que ya encontró
+`/revisor` en PR2 (`SelectColumn` no respeta Policies, hay que filtrar
+`options()` por ability específica de cada destino, no un `Gate::any()`
+genérico) — corregido desde el arranque esta vez. Nueva migración
+dropea `posicion`; en MariaDB real hubo que agregar un índice de
+reemplazo antes de poder borrar el índice compuesto (dependía de él una
+FK). 10 tests nuevos, suite completa 80 passed / 1 risky, Pint limpio.
+Pregunta grande diferida: integración con `Actividad`/`Tarea` de `axon`
+para el kanban de hitos/tareas — el bloqueo (cambios de axon sin
+pushear) se resolvió durante la sesión (ya se mergearon a GitHub), pero
+el diseño en sí queda pendiente de revisar el código real.
+
+</details>
 
 <details>
 <summary>2026-07-30 — PR3: Theme custom de Filament (ADR 0007)</summary>

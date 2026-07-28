@@ -35,6 +35,7 @@ class TransicionEstadoPermitidaSeeder extends Seeder
             [$cambio['propuesto'], $cambio['rechazado']],
             [$cambio['aprobado'], $cambio['implementado']],
             [$cambio['aprobado'], $cambio['rechazado']],
+            [$cambio['implementado'], $cambio['aprobado']],
         ]);
     }
 

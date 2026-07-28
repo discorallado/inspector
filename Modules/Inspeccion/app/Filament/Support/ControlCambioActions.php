@@ -19,6 +19,7 @@ class ControlCambioActions
             self::aprobar(),
             self::rechazar(),
             self::implementar(),
+            self::desimplementar(),
         ];
     }
 
@@ -55,6 +56,23 @@ class ControlCambioActions
             ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.implementar') && $record->estadoCambio->codigo === 'aprobado' && ! AccionesBorradoLogico::esTrashed($record))
             ->action(fn (ControlCambio $record) => $record->update([
                 'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'implementado')->value('id'),
+            ]));
+    }
+
+    /**
+     * Revierte un cambio ya marcado como implementado, por si se marcó por
+     * error o hay que reabrirlo. Misma ability que implementar(): quien
+     * puede marcar la implementación puede deshacerla.
+     */
+    private static function desimplementar(): Action
+    {
+        return Action::make('desimplementar')
+            ->label(__('inspeccion.control_cambio.acciones.desimplementar'))
+            ->color('gray')
+            ->requiresConfirmation()
+            ->visible(fn (ControlCambio $record) => Gate::allows('control_cambio.implementar') && $record->estadoCambio->codigo === 'implementado' && ! AccionesBorradoLogico::esTrashed($record))
+            ->action(fn (ControlCambio $record) => $record->update([
+                'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'aprobado')->value('id'),
             ]));
     }
 }
