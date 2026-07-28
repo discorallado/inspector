@@ -156,6 +156,53 @@ it('un usuario sin control_cambio.decidir no puede mountear la acción Aprobar s
         ->assertActionNotMounted('aprobar');
 });
 
+it('la acción Implementar (ability distinta a Aprobar) también funciona desde una card del board', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']); // control_cambio.implementar
+    $cambio = ControlCambio::withoutEvents(fn () => ControlCambio::factory()->for($this->tablero)->create([
+        'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'aprobado')->value('id'),
+    ]));
+
+    $this->actingAs($user);
+
+    Livewire::test(ControlCambiosBoard::class)
+        ->mountAction('implementar', ['recordKey' => (string) $cambio->id])
+        ->assertActionMounted('implementar')
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect($cambio->refresh()->estadoCambio->codigo)->toBe('implementado');
+});
+
+it('supervisor (decidir, sin implementar) no puede mountear la acción Implementar', function () {
+    $user = User::factory()->create(['role' => 'supervisor']);
+    $cambio = ControlCambio::withoutEvents(fn () => ControlCambio::factory()->for($this->tablero)->create([
+        'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'aprobado')->value('id'),
+    ]));
+
+    $this->actingAs($user);
+
+    Livewire::test(ControlCambiosBoard::class)
+        ->mountAction('implementar', ['recordKey' => (string) $cambio->id])
+        ->assertActionNotMounted('implementar');
+});
+
+it('la acción Rechazar también funciona desde una card del board', function () {
+    $user = User::factory()->create(['role' => 'supervisor']); // control_cambio.decidir
+    $cambio = ControlCambio::factory()->for($this->tablero)->create([
+        'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'propuesto')->value('id'),
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ControlCambiosBoard::class)
+        ->mountAction('rechazar', ['recordKey' => (string) $cambio->id])
+        ->assertActionMounted('rechazar')
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect($cambio->refresh()->estadoCambio->codigo)->toBe('rechazado');
+});
+
 it('el board incluye el asset JS de flowforge y muestra las 4 columnas del catálogo', function () {
     $user = User::factory()->create(['role' => 'supervisor']);
 
