@@ -84,6 +84,36 @@ it('un usuario sin ninguna ability de control de cambios no puede mover cards au
     expect($cambio->refresh()->estado_cambio_id)->not->toBe($destino->id);
 });
 
+it('un usuario que solo puede proponer (sin decidir) no puede aprobar arrastrando, aunque el botón sí lo bloquea', function () {
+    $user = User::factory()->create(['role' => 'tecnico']); // solo control_cambio.proponer
+    $cambio = ControlCambio::factory()->for($this->tablero)->create([
+        'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'propuesto')->value('id'),
+    ]);
+    $destino = EstadoCambio::query()->where('codigo', 'aprobado')->first();
+
+    $this->actingAs($user);
+
+    Livewire::test(ControlCambiosBoard::class)
+        ->call('moveCard', (string) $cambio->id, (string) $destino->id);
+
+    expect($cambio->refresh()->estado_cambio_id)->not->toBe($destino->id);
+});
+
+it('un usuario con decidir (sin implementar) no puede marcar implementado arrastrando', function () {
+    $user = User::factory()->create(['role' => 'supervisor']); // decidir, no implementar
+    $cambio = ControlCambio::withoutEvents(fn () => ControlCambio::factory()->for($this->tablero)->create([
+        'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'aprobado')->value('id'),
+    ]));
+    $destino = EstadoCambio::query()->where('codigo', 'implementado')->first();
+
+    $this->actingAs($user);
+
+    Livewire::test(ControlCambiosBoard::class)
+        ->call('moveCard', (string) $cambio->id, (string) $destino->id);
+
+    expect($cambio->refresh()->estado_cambio_id)->not->toBe($destino->id);
+});
+
 it('no se puede mover una card que ya fue borrada lógicamente', function () {
     $user = User::factory()->create(['role' => 'supervisor']);
     $cambio = ControlCambio::factory()->for($this->tablero)->create([

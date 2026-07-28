@@ -67,8 +67,14 @@ class ControlCambiosBoard extends BoardResourcePage
     }
 
     /**
-     * Misma autorización que ya exige ControlCambioPolicy::update() para
-     * cualquier cambio sobre un registro existente.
+     * La ability requerida depende de a qué columna se arrastra la card,
+     * igual que ya distingue ControlCambioActions entre sus 3 acciones
+     * (aprobar/rechazar exigen control_cambio.decidir, implementar exige
+     * control_cambio.implementar). Un Gate::any() genérico dejaba mover
+     * cualquier card a cualquier columna con solo tener alguna ability del
+     * módulo — ej. un rol con únicamente control_cambio.proponer podía
+     * "aprobar" arrastrando, aunque el botón Aprobar correctamente se lo
+     * niega.
      */
     public function moveCard(
         string $cardId,
@@ -76,7 +82,20 @@ class ControlCambiosBoard extends BoardResourcePage
         ?string $afterCardId = null,
         ?string $beforeCardId = null,
     ): void {
-        if (! Gate::any(['control_cambio.proponer', 'control_cambio.decidir', 'control_cambio.implementar'])) {
+        // 'propuesto' (o cualquier destino fuera del catálogo) no tiene una
+        // acción de botón equivalente — no hay transición sembrada hacia
+        // ahí desde un registro existente, así que cualquier intento lo
+        // termina rechazando TransicionEstadoGuard igual. Se exige
+        // 'decidir' como piso mínimo para no autorizar en blanco, dejando
+        // que sea el guard (no esta autorización) el que dé el motivo
+        // específico del rechazo.
+        $ability = match (EstadoCambio::query()->find($targetColumnId)?->codigo) {
+            'aprobado', 'rechazado' => 'control_cambio.decidir',
+            'implementado' => 'control_cambio.implementar',
+            default => 'control_cambio.decidir',
+        };
+
+        if (! Gate::allows($ability)) {
             throw new AuthorizationException;
         }
 
