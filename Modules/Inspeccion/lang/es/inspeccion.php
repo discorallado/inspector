@@ -124,7 +124,9 @@ return [
             'aprobar' => 'Aprobar',
             'rechazar' => 'Rechazar',
             'implementar' => 'Marcar implementado',
+            'ver_kanban' => 'Ver Kanban',
         ],
+        'kanban_titulo' => 'Kanban de Control de Cambios',
     ],
 
     'checklist' => [

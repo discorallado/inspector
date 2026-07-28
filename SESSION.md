@@ -7,15 +7,34 @@
 ---
 
 ## Última actualización
-2026-07-29
+2026-07-30
 
 ## Módulo / feature en curso
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
-seguimiento en terreno. Arquitectura cerrada (ADR 0003). **PR1 de 8
-implementado** (kanban de Observaciones, ADR 0004) — ver "Próximo paso
-concreto" para PR2.
+seguimiento en terreno. Arquitectura cerrada (ADR 0003). **PR1 y PR2 de 8
+implementados** (kanban de Observaciones ADR 0004, kanban de Control de
+Cambios ADR 0005) — ver "Próximo paso concreto" para PR3.
 
-## Estado actual (2026-07-29) — PR1: Kanban de Observaciones
+## Estado actual (2026-07-30) — PR2: Kanban de Control de Cambios
+
+Mismo patrón que PR1 (ver ADR 0005 para el detalle completo, solo difiere
+de PR1 en lo siguiente):
+- Columnas = catálogo `EstadoCambio` (4 estados, no 3).
+- `moveCard()` gateado con `Gate::any(['control_cambio.proponer',
+  'control_cambio.decidir', 'control_cambio.implementar'])` — misma
+  condición que ya usa `ControlCambioPolicy::update()` — porque acá hay 3
+  abilities distintas según la transición, no una sola como en PR1.
+- Acciones de card reutilizadas: `ControlCambioActions::todas()`
+  (aprobar/rechazar/implementar).
+- `ControlCambioObserver::creating()` con la posición base **se agregó
+  desde el arranque** (en PR1 este hook salió recién al pasar `/revisor`
+  — acá no hubo que esperar a encontrarlo de nuevo).
+- 12 tests nuevos (`ControlCambioKanbanTest`). Suite completa: **90/90 en
+  verde** (2 risky sin fallas), Pint limpio.
+- Pendiente: correr `/revisor` y `/qa` sobre este PR (igual que se hizo
+  con PR1) antes de abrir su PR en GitHub.
+
+## Estado histórico (2026-07-29) — PR1: Kanban de Observaciones
 
 - `relaticle/flowforge ^4.0` instalado. Columna `posicion`
   (`decimal(20,10)`, no `integer` como decía el borrador del ADR 0003 —
@@ -174,19 +193,38 @@ Suite final: **66/66 tests en verde**, Pint limpio.
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 
 ## Próximo paso concreto
-PR1 (kanban de Observaciones) cerrado y revisado — falta solo abrir su PR
-en GitHub cuando se decida. Después, `/ingeniero` — **PR2: Kanban de
-Control de Cambios**, mismo patrón que PR1 (migración `posicion` en
-`control_cambios`,
-board con columnas por `EstadoCambio`, reutilizando `ControlCambioActions`).
-Ver detalle en el ADR
+PR2 (kanban de Control de Cambios) implementado, falta correr `/revisor`
+y `/qa` (igual que se hizo con PR1) antes de abrir PR en GitHub de ambos.
+Después, `/ingeniero` — **PR3: Vista de Tablero** (sin Gantt todavía),
+página custom con header + hitos agrupados por `GrupoHito` + progreso por
+grupo + observaciones/cambios de ese tablero inline. Ver detalle en el ADR
 [`0003-rediseno-ux-seguimiento-terreno.md`](Modules/Inspeccion/docs/adr/0003-rediseno-ux-seguimiento-terreno.md) §6
-y el patrón ya implementado en
-[`0004-kanban-observaciones-flowforge.md`](Modules/Inspeccion/docs/adr/0004-kanban-observaciones-flowforge.md).
+y los patrones ya implementados en
+[`0004-kanban-observaciones-flowforge.md`](Modules/Inspeccion/docs/adr/0004-kanban-observaciones-flowforge.md) y
+[`0005-kanban-control-cambios-flowforge.md`](Modules/Inspeccion/docs/adr/0005-kanban-control-cambios-flowforge.md).
 
 ---
 
 ## Historial de sesiones anteriores
+
+<details>
+<summary>2026-07-30 — PR2: Kanban de Control de Cambios con relaticle/flowforge (ADR 0005)</summary>
+
+Mismo patrón que PR1, sin nuevas dependencias. Migración `posicion`
+(decimal 20,10) + índice único en `control_cambios`. Nueva página
+`ControlCambiosBoard` (`BoardResourcePage`) con columnas dinámicas desde
+`EstadoCambio` (4 estados) y card actions reutilizando
+`ControlCambioActions` (aprobar/rechazar/implementar). `moveCard()`
+gateado con `Gate::any(['control_cambio.proponer', 'control_cambio.decidir',
+'control_cambio.implementar'])` — misma condición que
+`ControlCambioPolicy::update()`, porque acá hay 3 abilities distintas
+según la transición en vez de una sola. `ControlCambioObserver::creating()`
+con la posición base se agregó desde el arranque (en PR1 salió recién al
+pasar `/revisor`). 12 tests nuevos, suite completa 90/90 en verde (2 risky
+sin fallas), Pint limpio. Pendiente: correr `/revisor` y `/qa` sobre este
+PR antes de abrir su PR en GitHub.
+
+</details>
 
 <details>
 <summary>2026-07-29 — PR1: Kanban de Observaciones con relaticle/flowforge (ADR 0004)</summary>
