@@ -130,3 +130,90 @@ it('una Observacion nueva entra a su columna con una posición base, no null', f
     // La segunda queda después de la primera dentro de la misma columna.
     expect((float) $segunda->posicion)->toBeGreaterThan((float) $primera->posicion);
 });
+
+it('mover a Informativa (el otro destino válido desde Pendiente) también funciona', function () {
+    $user = User::factory()->create(['role' => 'calidad']);
+    $observacion = Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'estado_observacion_id' => EstadoObservacion::query()->where('codigo', 'pendiente')->value('id'),
+    ]);
+    $destino = EstadoObservacion::query()->where('codigo', 'informativa')->first();
+
+    $this->actingAs($user);
+    Livewire::test(ObservacionesBoard::class)
+        ->call('moveCard', (string) $observacion->id, (string) $destino->id);
+
+    expect($observacion->refresh()->estado_observacion_id)->toBe($destino->id);
+});
+
+it('la acción Cerrar reutilizada en una card del board persiste fecha_cierre y observacion_cierre', function () {
+    $user = User::factory()->create(['role' => 'calidad']);
+    $observacion = Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'estado_observacion_id' => EstadoObservacion::query()->where('codigo', 'pendiente')->value('id'),
+    ]);
+    $destino = EstadoObservacion::query()->where('codigo', 'subsanada_ok')->first();
+
+    $this->actingAs($user);
+
+    Livewire::test(ObservacionesBoard::class)
+        ->mountAction('cerrar', ['recordKey' => (string) $observacion->id])
+        ->assertActionMounted('cerrar')
+        ->setActionData([
+            'estado_observacion_id' => $destino->id,
+            'fecha_cierre' => '2026-07-29',
+            'observacion_cierre' => 'Cerrado end-to-end desde el board.',
+        ])
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    $observacion->refresh();
+    expect($observacion->estado_observacion_id)->toBe($destino->id)
+        ->and($observacion->observacion_cierre)->toBe('Cerrado end-to-end desde el board.')
+        ->and($observacion->fecha_cierre->toDateString())->toBe('2026-07-29');
+});
+
+it('tecnico (sin observacion.cerrar) no puede mountear la acción Cerrar sobre una card puntual', function () {
+    $user = User::factory()->create(['role' => 'tecnico']);
+    $observacion = Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'estado_observacion_id' => EstadoObservacion::query()->where('codigo', 'pendiente')->value('id'),
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ObservacionesBoard::class)
+        ->mountAction('cerrar', ['recordKey' => (string) $observacion->id])
+        ->assertActionNotMounted('cerrar');
+});
+
+it('una observación sin tablero asociado no rompe el render del board', function () {
+    $user = User::factory()->create(['role' => 'calidad']);
+    Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'estado_observacion_id' => EstadoObservacion::query()->where('codigo', 'pendiente')->value('id'),
+        'tablero_id' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(ObservacionResource::getUrl('board'))
+        ->assertSuccessful();
+});
+
+it('el board incluye el asset JS de flowforge y muestra las 3 columnas del catálogo', function () {
+    $user = User::factory()->create(['role' => 'calidad']);
+
+    $response = $this->actingAs($user)->get(ObservacionResource::getUrl('board'));
+
+    $response->assertSuccessful()
+        ->assertSee('Pendiente')
+        ->assertSee('Subsanada (OK)')
+        ->assertSee('Informativa');
+
+    expect($response->getContent())->toContain('relaticle/flowforge');
+});
+
+it('el listado de Observaciones muestra el botón Ver Kanban hacia el board', function () {
+    $user = User::factory()->create(['role' => 'calidad']);
+
+    $this->actingAs($user)
+        ->get(ObservacionResource::getUrl('index'))
+        ->assertSuccessful()
+        ->assertSee(__('inspeccion.observacion.acciones.ver_kanban'));
+});
