@@ -11,11 +11,45 @@
 
 ## Módulo / feature en curso
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
-seguimiento en terreno. Arquitectura cerrada (ADR 0003). **PR1 y PR2 de 8
-implementados** (kanban de Observaciones ADR 0004, kanban de Control de
-Cambios ADR 0005) — ver "Próximo paso concreto" para PR3.
+seguimiento en terreno. Arquitectura cerrada (ADR 0003, ampliada por ADR
+0006). **PR1 y PR2 de 10 implementados** (kanban de Observaciones ADR
+0004, kanban de Control de Cambios ADR 0005) — ver "Próximo paso
+concreto" para PR3.
 
-## Estado actual (2026-07-30) — PR2: Kanban de Control de Cambios
+## Estado actual (2026-07-30) — ADR 0006: theme custom + UI bespoke + autonumeración
+
+El usuario probó el panel y pidió un replanteo de UI/UX: el kanban se ve
+"solo texto" (bug real, diagnosticado) y el resto es CRUD Filament por
+defecto — pidió algo "increíble", mobile-first, sin depender de relation
+managers para todo. Sesión de `/arquitecto`, cerrada en ADR
+[`0006-theme-custom-y-ui-bespoke.md`](Modules/Inspeccion/docs/adr/0006-theme-custom-y-ui-bespoke.md),
+que amplía el plan de PRs del ADR 0003 (no reabre PR1/PR2):
+
+- **Causa del kanban sin estilos**: `AdminPanelProvider` nunca configuró
+  `->viteTheme(...)`. Filament usa su CSS precompilado propio (solo
+  clases de sus componentes core); las vistas de `relaticle/flowforge`
+  usan clases Tailwind que nunca se compilaron en ningún stylesheet.
+  Afecta a cualquier vista custom futura, no solo al kanban.
+- **PR3 (nuevo, prerequisito)**: theme custom Filament + Tailwind 4
+  (`@source` escaneando el módulo + flowforge), con tokens de diseño CSS
+  para la paleta de color (el usuario prefirió definir los colores más
+  adelante, no bloquear con eso).
+- **PR4 (nuevo)**: autonumeración en 10 campos de "orden" manual
+  (9 catálogos simples + `ChecklistTemplateItems.orden`) vía
+  autocálculo + `->reorderable()`, y backfill de `TableroHito.item`
+  (recalcula los 234 existentes con `{grupo.orden}.{posición}` — el
+  usuario eligió recalcular todo, no solo los nuevos).
+- **Checklist táctil (PR8, redefinido)**: lista scrolleable con 3
+  botones grandes por ítem (Cumple/No Cumple/N.A.), sin modal —
+  el usuario eligió esto sobre un wizard tipo app porque permite saltar
+  entre ítems libremente.
+- **Lenguaje visual**: "bespoke marcado" (elegido por el usuario sobre
+  un refinamiento liviano) para Centro de Seguimiento, Vista de Tablero
+  y checklist táctil — cards con elevación, progress rings, touch
+  targets grandes, color de estado consistente en toda la app.
+- Plan de PRs completo (10 en total) en el ADR 0006 §4.
+
+## Estado histórico (2026-07-30) — PR2: Kanban de Control de Cambios
 
 Mismo patrón que PR1 (ver ADR 0005 para el detalle completo, solo difiere
 de PR1 en lo siguiente):
@@ -193,15 +227,15 @@ Suite final: **66/66 tests en verde**, Pint limpio.
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 
 ## Próximo paso concreto
-PR2 (kanban de Control de Cambios) implementado, falta correr `/revisor`
-y `/qa` (igual que se hizo con PR1) antes de abrir PR en GitHub de ambos.
-Después, `/ingeniero` — **PR3: Vista de Tablero** (sin Gantt todavía),
-página custom con header + hitos agrupados por `GrupoHito` + progreso por
-grupo + observaciones/cambios de ese tablero inline. Ver detalle en el ADR
-[`0003-rediseno-ux-seguimiento-terreno.md`](Modules/Inspeccion/docs/adr/0003-rediseno-ux-seguimiento-terreno.md) §6
-y los patrones ya implementados en
-[`0004-kanban-observaciones-flowforge.md`](Modules/Inspeccion/docs/adr/0004-kanban-observaciones-flowforge.md) y
-[`0005-kanban-control-cambios-flowforge.md`](Modules/Inspeccion/docs/adr/0005-kanban-control-cambios-flowforge.md).
+`/ingeniero` — **PR3: Theme custom Filament + Tailwind 4** (prerequisito
+de todo lo visual de acá en adelante, arregla retroactivamente la
+apariencia del kanban de PR1/PR2). Ver
+[`0006-theme-custom-y-ui-bespoke.md`](Modules/Inspeccion/docs/adr/0006-theme-custom-y-ui-bespoke.md)
+§3.1 y §4 para el plan completo de 10 PRs. PR1 y PR2 ya pasaron por
+`/revisor` + `/qa` (además de 2 bugs no relacionados encontrados y
+arreglados sobre la marcha: ORDER BY ambiguo en checklist templates,
+TypeError en la regla unique de TableroForm) — solo falta abrir sus PR en
+GitHub cuando se retome ese trámite, no es bloqueante para arrancar PR3.
 
 ---
 
