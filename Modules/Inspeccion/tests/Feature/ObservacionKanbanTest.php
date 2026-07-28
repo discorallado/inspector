@@ -113,3 +113,20 @@ it('mover un cardId inexistente lanza una excepción en vez de fallar en silenci
         ->call('moveCard', '999999', (string) $destino->id))
         ->toThrow(InvalidArgumentException::class);
 });
+
+it('una Observacion nueva entra a su columna con una posición base, no null', function () {
+    $pendiente = EstadoObservacion::query()->where('codigo', 'pendiente')->value('id');
+
+    $primera = Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'estado_observacion_id' => $pendiente,
+    ]);
+
+    expect($primera->posicion)->not->toBeNull();
+
+    $segunda = Observacion::factory()->for($this->visita, 'visitaInspeccion')->create([
+        'estado_observacion_id' => $pendiente,
+    ]);
+
+    // La segunda queda después de la primera dentro de la misma columna.
+    expect((float) $segunda->posicion)->toBeGreaterThan((float) $primera->posicion);
+});

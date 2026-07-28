@@ -36,12 +36,23 @@ concreto" para PR2.
   de `BoardResourcePage` (`ObservacionPolicy::viewAny` → `tablero.ver`).
 - Acción "Cerrar" existente (`ObservacionActions`) reutilizada como
   acción de card, sin duplicar lógica.
-- 5 tests nuevos (`ObservacionKanbanTest`). Suite completa: **71/71 en
-  verde**, Pint limpio. ADR 0004 documenta la implementación completa.
+- **`/revisor` corrido sobre el diff** (ver ADR 0004): sin hallazgos
+  críticos. Se verificó con reproducciones reales (no solo lectura de
+  código) que `ObservacionActions::cerrar()` (que usa `->visible()` con
+  un Gate, no `->authorize()`) sí bloquea la ejecución server-side —
+  Filament liga `isDisabled()` a `isHidden()`, así que no es una
+  vulnerabilidad pese a no ser el patrón más idiomático. Se cerró un
+  hallazgo real: `ObservacionObserver::creating()` ahora asigna una
+  posición base (`DecimalPosition::after()`/`forEmptyColumn()`) a toda
+  Observacion nueva — antes quedaban con `posicion = NULL` indefinidamente
+  si no se creaban arrastrando una card en el board.
+- 8 tests nuevos en total (`ObservacionKanbanTest`, incluye card
+  soft-deleted, cardId inexistente y posición base al crear). Suite
+  completa: **74/74 en verde**, Pint limpio. ADR 0004 documenta todo.
 - Pendiente de validar (riesgo heredado del ADR 0003 §7): soporte táctil
   del drag-and-drop en tablet real — no probado todavía, solo el flujo
   servidor vía tests.
-- **Siguiente:** correr `/revisor` sobre este diff antes de abrir PR.
+- **PR1 cerrado.** Listo para abrir PR en GitHub cuando se decida.
 
 ## Estado histórico (sesión 2026-07-28)
 
@@ -154,9 +165,10 @@ Suite final: **66/66 tests en verde**, Pint limpio.
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 
 ## Próximo paso concreto
-Correr `/revisor` sobre el diff de PR1 (kanban de Observaciones) antes de
-abrir su PR en GitHub. Después, `/ingeniero` — **PR2: Kanban de Control de
-Cambios**, mismo patrón que PR1 (migración `posicion` en `control_cambios`,
+PR1 (kanban de Observaciones) cerrado y revisado — falta solo abrir su PR
+en GitHub cuando se decida. Después, `/ingeniero` — **PR2: Kanban de
+Control de Cambios**, mismo patrón que PR1 (migración `posicion` en
+`control_cambios`,
 board con columnas por `EstadoCambio`, reutilizando `ControlCambioActions`).
 Ver detalle en el ADR
 [`0003-rediseno-ux-seguimiento-terreno.md`](Modules/Inspeccion/docs/adr/0003-rediseno-ux-seguimiento-terreno.md) §6

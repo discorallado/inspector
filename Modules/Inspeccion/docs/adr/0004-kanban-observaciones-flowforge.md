@@ -60,6 +60,14 @@ y luego removió el mismo paquete sin dejar registro del motivo — ver ADR
   acción "Cerrar" existente, con su propio form y sus propias opciones de
   destino ya filtradas por `TransicionEstadoGuard`) en vez de duplicar
   lógica de cierre dentro del board.
+- **Posición inicial al crear**: `/revisor` encontró que toda Observacion
+  creada fuera del board (form, seeder, tinker) quedaba con `posicion =
+  NULL` indefinidamente, sin orden definido dentro de su columna hasta el
+  primer drag manual. Se cerró agregando `ObservacionObserver::creating()`,
+  que asigna la misma posición base que tendría una card recién creada en
+  Flowforge: al final de las que ya existen en su `estado_observacion_id`
+  (`DecimalPosition::after(...)`), o la posición inicial si la columna
+  está vacía (`DecimalPosition::forEmptyColumn()`).
 
 ## Alternativas descartadas
 
