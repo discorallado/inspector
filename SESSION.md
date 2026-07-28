@@ -10,6 +10,11 @@
 2026-07-31
 
 ## Módulo / feature en curso
+**Arquitectura cerrada para portar Actividad/Tarea desde `axon`** (ADR
+0009) — reemplaza el kanban de hitos que había quedado diferido en el
+ADR 0008. Sin implementar todavía, próximo paso: `/ingeniero` en PR4. Ver
+detalle completo más abajo.
+
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
 seguimiento en terreno. **El usuario pidió revertir el kanban de
 Observaciones/Control de Cambios a tabla + select** (ADR 0008) tras
@@ -18,7 +23,58 @@ seguimiento de hitos/tareas de `Tablero`, diferido hasta definir la
 integración con `axon` (ver abajo, sección grande nueva). PR3 (theme
 custom, ADR 0007) sigue vigente sin cambios.
 
-## Estado actual (2026-07-31) — ADR 0008: kanban → tabla + select, y pregunta de integración con axon
+## Estado actual (2026-07-31) — ADR 0009: integración Actividad/Tarea desde axon
+
+Sesión de `/arquitecto` cerrando la pregunta que quedó diferida en el ADR
+0008. Revisé el código **real** de `axon` en `/home/ubuntu/axon` (no
+supuestos): jerarquía `Organization -> Client -> Project -> Activity ->
+Task` con ULIDs, multi-tenancy real (`HasOrganizationScope`), Kanban
+Livewire+SortableJS (relaticle/flowforge se instaló y se removió ahí
+también — mismo camino que recorrimos acá), Gantt migrado de frappe-gantt
+a **DHTMLX Gantt** (dependencias vía `TaskLink`, zoom, dark mode).
+
+El usuario eligió la integración profunda (Opción A de 3 presentadas):
+portar (copiar y adaptar, no importar en runtime — son apps Laravel
+separadas) `Activity`/`Task` a Inspeccion como `Actividad`/`Tarea`,
+reemplazando el `TableroHito` plano actual.
+
+**Hallazgo importante**: el ADR-0010 de axon rechazó DHTMLX explícitamente
+("comercial, viola la regla open-source") pero el código real lo usa
+igual, sin ADR que documente el cambio. Investigué: desde DHTMLX Gantt
+v10 la edición Community es MIT (antes GPL) — no es necesariamente una
+violación, pero el CDN que usa axon (`edge`, sin fijar versión/edición)
+podría estar sirviendo un build de evaluación PRO con marca de agua. El
+usuario decidió portarlo igual y resolver esto como deuda aparte, no
+bloqueante para el diseño.
+
+**4 decisiones cerradas con el usuario** (ver ADR 0009 para el detalle
+completo):
+- Nombres en español (`Actividad`/`Tarea`, no `Activity`/`Task`).
+- `Actividad` lleva solo `tablero_id` (no `proyecto_id` duplicado, se
+  deriva vía `tablero->proyecto_id`).
+- `TransicionEstadoGuard` se generaliza para aceptar códigos string
+  (además de IDs de catálogo) — `Tarea.status` es un enum, no una tabla,
+  pero sigue validado por la misma máquina de estados ya probada.
+- Riesgo de licencia DHTMLX: se acepta y se porta igual, se resuelve
+  después.
+
+`Tarea` gana dos columnas que axon no tiene hoy: `peso` (para que
+`CalculadorAvanceTablero` siga funcionando) y `real_inicio`/`real_fin`
+(seguimiento planificado-vs-real que axon no cubre). Ambas nullable, no
+rompen compatibilidad con un futuro merge.
+
+Los 234 hitos ya importados se migran con un comando de datos (no se
+borra `TableroHito`/`GrupoHito`/`EstadoAvance` de entrada — quedan
+deprecados hasta validar en uso real, se sacan en un PR de limpieza
+aparte). El PR4 original del ADR 0006 (autonumeración de
+`TableroHito.item`) queda **cancelado** — la entidad se depreca.
+
+Plan: **PR4** (migraciones + modelos + guard generalizado) -> **PR5**
+(migración de datos) -> **PR6** (ActividadesRelationManager +
+CalculadorAvanceTablero adaptado) -> **PR7** (Kanban) -> **PR8** (Gantt)
+-> **PR9** (cleanup de tablas viejas). Nada implementado todavía.
+
+## Estado histórico (2026-07-31) — ADR 0008: kanban → tabla + select, y pregunta de integración con axon
 
 **Reversión de PR1/PR2** (el usuario probó el resultado real y pidió
 volver a algo "más estático"):
@@ -295,23 +351,50 @@ Suite final: **66/66 tests en verde**, Pint limpio.
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 
 ## Próximo paso concreto
-Dos caminos en paralelo, según lo que se decida al retomar:
-1. **Revisar el `axon` recién mergeado** para resolver la pregunta de
-   integración `Tablero -> Actividad/Tarea` planteada arriba — esto
-   probablemente reordena o reemplaza el PR4 original (autonumeración de
-   `TableroHito.item`) y el kanban de hitos/tareas diferido, según lo que
-   se decida.
-2. Si se sigue con el plan original mientras tanto: `/ingeniero` — PR4
-   del ADR 0006 (autonumeración de los 9 catálogos simples +
-   `ChecklistTemplateItems.orden`), dejando `TableroHito.item` fuera
-   hasta resolver (1).
+`/ingeniero` — **PR4 del ADR 0009**: migraciones + modelos `Actividad`/`Tarea`/`TareaLink`,
+generalización de `TransicionEstadoGuard` para códigos string, seeds de
+transición para `TaskStatus`. Ver
+[`0009-integracion-actividad-tarea-desde-axon.md`](Modules/Inspeccion/docs/adr/0009-integracion-actividad-tarea-desde-axon.md)
+§8 para el plan completo (PR4-PR9). La autonumeración de catálogos del
+ADR 0006 (los 9 simples, sin `TableroHito.item` que quedó cancelado)
+sigue pendiente pero sin relación con esto — se puede retomar en
+cualquier momento, no depende de PR4-PR9.
 
-Correr `/revisor` sobre PR3 (theme, ADR 0007) y PR de esta sesión (ADR
-0008) antes de abrir sus PR en GitHub — no es bloqueante para seguir.
+Pendiente, no bloqueante: correr `/revisor` sobre PR3 (theme, ADR 0007) y
+el PR de reversión kanban→tabla (ADR 0008) antes de abrir sus PR en
+GitHub.
 
 ---
 
 ## Historial de sesiones anteriores
+
+<details>
+<summary>2026-07-31 — Arquitectura: integración Actividad/Tarea portada desde axon (ADR 0009)</summary>
+
+Sesión de `/arquitecto` resolviendo la pregunta diferida en el ADR 0008.
+Revisado el código real de `axon` (no la copia vieja): jerarquía
+`Organization -> Client -> Project -> Activity -> Task` con ULIDs,
+multi-tenancy real, Kanban Livewire+SortableJS (mismo camino de
+flowforge instalado-y-removido que recorrimos acá), Gantt migrado a
+DHTMLX. Usuario eligió integración profunda: portar `Activity`/`Task`
+como `Actividad`/`Tarea` en Inspeccion, reemplazando `TableroHito`.
+Hallazgo: el ADR-0010 de axon rechazó DHTMLX por licencia pero el código
+real lo usa igual sin ADR que lo documente — investigado, DHTMLX v10
+Community es MIT, pero el CDN de axon no fija edición y podría estar
+sirviendo el build de evaluación PRO; riesgo aceptado, no bloqueante.
+4 decisiones cerradas: nombres en español, `Actividad` con solo
+`tablero_id` (no `proyecto_id` duplicado), `TransicionEstadoGuard`
+generalizado para códigos string, DHTMLX se porta igual. `Tarea` gana
+`peso` y `real_inicio`/`real_fin` (extensiones sobre axon, nullable).
+Los 234 hitos existentes se migran con un comando de datos; tablas
+viejas quedan deprecadas, no borradas, hasta un PR de limpieza aparte.
+Plan: PR4 (modelo de datos) -> PR5 (migración de datos) -> PR6
+(relation manager + calculador) -> PR7 (kanban) -> PR8 (gantt) -> PR9
+(cleanup). Nada implementado todavía — ADR 0009 documenta todo. El PR4
+original del ADR 0006 (autonumeración de `TableroHito.item`) queda
+cancelado.
+
+</details>
 
 <details>
 <summary>2026-07-31 — Revierte kanban de Observaciones/Control de Cambios a tabla + select (ADR 0008)</summary>
