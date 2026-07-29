@@ -12,9 +12,32 @@
 ## Módulo / feature en curso
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
 seguimiento en terreno. Arquitectura cerrada (ADR 0003, ampliada por ADR
-0006). **PR1 y PR2 de 10 implementados** (kanban de Observaciones ADR
-0004, kanban de Control de Cambios ADR 0005) — ver "Próximo paso
-concreto" para PR3.
+0006). **PR1, PR2 y PR3 de 10 implementados** (kanban de Observaciones
+ADR 0004, kanban de Control de Cambios ADR 0005, theme custom ADR 0007)
+— ver "Próximo paso concreto" para PR4.
+
+## Estado actual (2026-07-30) — PR3: Theme custom de Filament
+
+- `resources/css/filament/admin/theme.css` nuevo: importa el theme base
+  de Filament + `@source` hacia `app/Filament`, `Modules/Inspeccion/app/Filament`,
+  `Modules/Inspeccion/resources/views` y `vendor/relaticle/flowforge/resources/views`.
+  Registrado con `->viteTheme(...)` en `AdminPanelProvider` + agregado al
+  `input` de `vite.config.js`.
+- **Bug propio durante la implementación**: el primer build falló
+  (`CssSyntaxError: Invalid custom property`) porque un comentario CSS
+  mío tenía la secuencia `*/` dentro del texto (`--primary-*/--success-*`),
+  cerrando el comentario antes de tiempo. Se aisló incrementalmente
+  (build mínimo, agregar `@source` de a uno) antes de asumir que era un
+  problema de configuración de Tailwind/Filament — no lo era.
+- Paleta de color sigue diferida (`Color::Amber` sin cambios) — a
+  propósito, ver ADR 0006 §3.2.
+- Verificado que el HTML real que devuelve `/admin` y el board de
+  Observaciones referencian el asset compilado (`build/assets/theme-*.css`),
+  no solo que el build compile sin error. 2 tests nuevos. Suite completa:
+  **99 passed, 3 risky** (preexistentes, sin fallas), Pint limpio.
+- **Pendiente real, no verificable desde acá**: confirmar visualmente en
+  un navegador que el kanban ahora se ve con estilos (no tengo
+  herramienta de screenshot en este entorno).
 
 ## Estado actual (2026-07-30) — ADR 0006: theme custom + UI bespoke + autonumeración
 
@@ -227,19 +250,37 @@ Suite final: **66/66 tests en verde**, Pint limpio.
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 
 ## Próximo paso concreto
-`/ingeniero` — **PR3: Theme custom Filament + Tailwind 4** (prerequisito
-de todo lo visual de acá en adelante, arregla retroactivamente la
-apariencia del kanban de PR1/PR2). Ver
+Correr `/revisor` sobre PR3 (theme custom) antes de abrir su PR. Después,
+`/ingeniero` — **PR4: autonumeración** de los 10 campos de orden manual
+(9 catálogos simples + `ChecklistTemplateItems.orden`, autocálculo +
+`->reorderable()`) y el backfill de `TableroHito.item` (recalcula los
+234 hitos existentes como `{grupo.orden}.{posición}`). Ver
 [`0006-theme-custom-y-ui-bespoke.md`](Modules/Inspeccion/docs/adr/0006-theme-custom-y-ui-bespoke.md)
-§3.1 y §4 para el plan completo de 10 PRs. PR1 y PR2 ya pasaron por
-`/revisor` + `/qa` (además de 2 bugs no relacionados encontrados y
-arreglados sobre la marcha: ORDER BY ambiguo en checklist templates,
-TypeError en la regla unique de TableroForm) — solo falta abrir sus PR en
-GitHub cuando se retome ese trámite, no es bloqueante para arrancar PR3.
+§3.5 y §4 para el detalle y el plan completo de 10 PRs. PR1/PR2/PR3
+siguen pendientes de abrir su PR en GitHub cuando se retome ese trámite
+— no es bloqueante para seguir con PR4.
 
 ---
 
 ## Historial de sesiones anteriores
+
+<details>
+<summary>2026-07-30 — PR3: Theme custom de Filament (ADR 0007)</summary>
+
+Diagnóstico del ADR 0006 resuelto: `resources/css/filament/admin/theme.css`
+nuevo (importa el theme base de Filament + `@source` hacia el módulo y
+`vendor/relaticle/flowforge/resources/views`), registrado con
+`->viteTheme(...)` en `AdminPanelProvider` y agregado al `input` de
+`vite.config.js`. Bug propio en el camino: un comentario CSS con la
+secuencia `*/` cerraba el comentario antes de tiempo y rompía el build;
+se aisló incrementalmente antes de asumir que era un problema de
+Tailwind/Filament. Paleta de color sigue diferida a propósito. 2 tests
+nuevos verifican que el HTML real (no solo el build) referencia el CSS
+compilado, tanto en `/admin` como en el kanban de Observaciones. Suite
+completa 99 passed, 3 risky preexistentes, Pint limpio. Pendiente:
+confirmar visualmente en navegador (sin herramienta de screenshot acá).
+
+</details>
 
 <details>
 <summary>2026-07-30 — PR2: Kanban de Control de Cambios con relaticle/flowforge (ADR 0005)</summary>
