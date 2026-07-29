@@ -61,14 +61,15 @@ class ControlCambiosTable
 
     /**
      * Ofrece los estados alcanzables desde el actual según
-     * transiciones_estado_permitidas, filtrados ADEMÁS por la ability
-     * específica que exige cada destino (aprobado/rechazado -> decidir,
-     * implementado -> implementar) — igual que ya distingue
-     * ControlCambioActions entre sus acciones. No alcanza con "tiene
-     * alguna ability del módulo": un Gate::any() genérico acá dejaría a
-     * un rol con solo control_cambio.proponer aprobar/rechazar/implementar
-     * con el <select>, aunque los botones se lo nieguen correctamente
-     * (mismo hallazgo que /revisor encontró en el kanban de PR2).
+     * transiciones_estado_permitidas, filtrados ADEMÁS por la ability que
+     * exige esa transición puntual (origen -> destino), no solo el
+     * destino — igual que distingue ControlCambioActions entre sus
+     * acciones. Filtrar solo por destino deja un hueco: "-> aprobado"
+     * requiere `decidir` cuando viene de "propuesto", pero requiere
+     * `implementar` cuando viene de "implementado" (transición
+     * "desimplementar"); un supervisor con `decidir` (sin `implementar`)
+     * podía revertir un cambio Implementado -> Aprobado por el <select>
+     * aunque el botón "Desimplementar" se lo niegue correctamente.
      * El estado actual del registro siempre se incluye, sin filtrar por
      * ability, para que el <select> tenga una opción que coincida con el
      * valor seleccionado.
@@ -77,21 +78,33 @@ class ControlCambiosTable
      */
     private static function opcionesEstadoDestino(ControlCambio $record): array
     {
+        $origenCodigo = $record->estadoCambio->codigo;
+
         $idsAlcanzables = app(TransicionEstadoGuard::class)
             ->transicionesValidasDesde(TransicionEstadoPermitida::TIPO_ESTADO_CAMBIO, $record->estado_cambio_id);
 
         $idsAutorizados = EstadoCambio::query()
             ->whereIn('id', $idsAlcanzables)
             ->get()
-            ->filter(fn (EstadoCambio $estado) => Gate::allows(match ($estado->codigo) {
-                'aprobado', 'rechazado' => 'control_cambio.decidir',
-                'implementado' => 'control_cambio.implementar',
-                default => 'control_cambio.decidir',
-            }))
+            ->filter(fn (EstadoCambio $estado) => Gate::allows(self::abilityRequerida($origenCodigo, $estado->codigo)))
             ->pluck('id')
             ->push($record->estado_cambio_id)
             ->unique();
 
         return EstadoCambio::query()->whereIn('id', $idsAutorizados)->orderBy('orden')->pluck('nombre', 'id')->all();
+    }
+
+    /**
+     * Misma matriz de abilities que ControlCambioActions: aprobar/rechazar
+     * (desde propuesto o aprobado) exigen `decidir`; implementar (desde
+     * aprobado) y desimplementar (desde implementado) exigen `implementar`.
+     */
+    private static function abilityRequerida(string $origenCodigo, string $destinoCodigo): string
+    {
+        return match (true) {
+            $origenCodigo === 'aprobado' && $destinoCodigo === 'implementado' => 'control_cambio.implementar',
+            $origenCodigo === 'implementado' && $destinoCodigo === 'aprobado' => 'control_cambio.implementar',
+            default => 'control_cambio.decidir',
+        };
     }
 }
