@@ -7,7 +7,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Modules\Inspeccion\Filament\Resources\ControlCambios\Pages\ControlCambiosBoard;
 use Modules\Inspeccion\Filament\Resources\ControlCambios\Pages\CreateControlCambio;
 use Modules\Inspeccion\Filament\Resources\ControlCambios\Pages\EditControlCambio;
 use Modules\Inspeccion\Filament\Resources\ControlCambios\Pages\ListControlCambios;
@@ -56,7 +55,6 @@ class ControlCambioResource extends Resource
     {
         return [
             'index' => ListControlCambios::route('/'),
-            'board' => ControlCambiosBoard::route('/board'),
             'create' => CreateControlCambio::route('/create'),
             'edit' => EditControlCambio::route('/{record}/edit'),
         ];

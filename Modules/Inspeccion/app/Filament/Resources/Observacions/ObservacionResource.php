@@ -11,7 +11,6 @@ use Modules\Inspeccion\Filament\Concerns\PerteneceAInspeccionCalidad;
 use Modules\Inspeccion\Filament\Resources\Observacions\Pages\CreateObservacion;
 use Modules\Inspeccion\Filament\Resources\Observacions\Pages\EditObservacion;
 use Modules\Inspeccion\Filament\Resources\Observacions\Pages\ListObservacions;
-use Modules\Inspeccion\Filament\Resources\Observacions\Pages\ObservacionesBoard;
 use Modules\Inspeccion\Filament\Resources\Observacions\Schemas\ObservacionForm;
 use Modules\Inspeccion\Filament\Resources\Observacions\Tables\ObservacionsTable;
 use Modules\Inspeccion\Models\Observacion;
@@ -64,7 +63,6 @@ class ObservacionResource extends Resource
     {
         return [
             'index' => ListObservacions::route('/'),
-            'board' => ObservacionesBoard::route('/board'),
             'create' => CreateObservacion::route('/create'),
             'edit' => EditObservacion::route('/{record}/edit'),
         ];
