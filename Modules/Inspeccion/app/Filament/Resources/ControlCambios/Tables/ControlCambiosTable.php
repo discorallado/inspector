@@ -108,4 +108,18 @@ class ControlCambiosTable
             default => 'control_cambio.decidir',
         };
     }
+
+    /**
+     * Misma matriz de abilities que ControlCambioActions: aprobar/rechazar
+     * (desde propuesto o aprobado) exigen `decidir`; implementar (desde
+     * aprobado) y desimplementar (desde implementado) exigen `implementar`.
+     */
+    private static function abilityRequerida(string $origenCodigo, string $destinoCodigo): string
+    {
+        return match (true) {
+            $origenCodigo === 'aprobado' && $destinoCodigo === 'implementado' => 'control_cambio.implementar',
+            $origenCodigo === 'implementado' && $destinoCodigo === 'aprobado' => 'control_cambio.implementar',
+            default => 'control_cambio.decidir',
+        };
+    }
 }
