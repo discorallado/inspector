@@ -12,6 +12,19 @@ use Modules\Inspeccion\Models\TransicionEstadoPermitida;
  */
 class TransicionEstadoGuard
 {
+    /**
+     * Cache por request: transicionesValidasDesde() se llama una vez por
+     * fila en los SelectColumn de ObservacionsTable/ControlCambiosTable, y
+     * el par (tipo_catalogo, origen_id) se repite entre filas con el mismo
+     * estado. Vive solo durante el request actual — cada request HTTP es
+     * un proceso PHP nuevo (sin Octane), así que no hay riesgo de servir
+     * datos viejos entre requests ni de pisar la fila que se acaba de
+     * actualizar (esa fila cae en otra key de cache al cambiar su origen).
+     *
+     * @var array<string, Collection<int, int>>
+     */
+    private static array $cacheTransicionesValidas = [];
+
     public function puedeTransicionar(string $tipoCatalogo, ?int $origenId, int $destinoId): bool
     {
         if ($origenId === $destinoId) {
@@ -37,7 +50,9 @@ class TransicionEstadoGuard
      */
     public function transicionesValidasDesde(string $tipoCatalogo, ?int $origenId): Collection
     {
-        return TransicionEstadoPermitida::query()
+        $key = $tipoCatalogo.':'.($origenId ?? 'null');
+
+        return self::$cacheTransicionesValidas[$key] ??= TransicionEstadoPermitida::query()
             ->where('tipo_catalogo', $tipoCatalogo)
             ->where('estado_origen_id', $origenId)
             ->pluck('estado_destino_id');
