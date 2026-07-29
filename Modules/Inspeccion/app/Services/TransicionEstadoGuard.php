@@ -52,9 +52,16 @@ class TransicionEstadoGuard
     {
         $key = $tipoCatalogo.':'.($origenId ?? 'null');
 
-        return self::$cacheTransicionesValidas[$key] ??= TransicionEstadoPermitida::query()
+        self::$cacheTransicionesValidas[$key] ??= TransicionEstadoPermitida::query()
             ->where('tipo_catalogo', $tipoCatalogo)
             ->where('estado_origen_id', $origenId)
             ->pluck('estado_destino_id');
+
+        // Clona antes de devolver: los callers hacen ->push() sobre el
+        // resultado (para agregar el estado actual del registro a las
+        // opciones), y Collection::push() muta el objeto en el lugar. Sin
+        // el clone, ese push() corrompería la entrada de la cache
+        // compartida entre requests-fila del mismo render de tabla.
+        return clone self::$cacheTransicionesValidas[$key];
     }
 }
