@@ -84,3 +84,14 @@ it('recalcula y cachea el avance en el tablero al pasar una tarea de Pendiente a
     expect((float) $this->tablero->avance_global)->toBe(50.0)
         ->and($this->tablero->avance_calculado_at)->not->toBeNull();
 });
+
+it('recalcula el avance del tablero al eliminar una tarea', function () {
+    crearTarea($this->actividad, TaskStatus::Completada, 10);
+    $tarea = crearTarea($this->actividad, TaskStatus::Pendiente, 30);
+    $this->calculador->recalcularYGuardar($this->tablero);
+    expect((float) $this->tablero->refresh()->avance_global)->toBe(25.0);
+
+    $tarea->delete();
+
+    expect((float) $this->tablero->refresh()->avance_global)->toBe(100.0);
+});

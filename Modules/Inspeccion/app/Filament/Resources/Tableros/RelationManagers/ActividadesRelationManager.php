@@ -11,6 +11,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Modules\Inspeccion\Filament\Resources\Actividades\ActividadResource;
 use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Models\Actividad;
@@ -54,6 +55,7 @@ class ActividadesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('nombre')
             ->defaultSort('orden')
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('tareas'))
             ->columns([
                 TextColumn::make('nombre')
                     ->label(__('inspeccion.actividad.campos.nombre'))

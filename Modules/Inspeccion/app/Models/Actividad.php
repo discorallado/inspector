@@ -49,10 +49,14 @@ class Actividad extends Model
      * CalculadorAvanceTablero, aplicada solo a sus propias tareas). Se usa
      * como columna de referencia en ActividadesRelationManager, no se
      * persiste — a diferencia de Tablero.avance_global no hay un campo
-     * `actividades.avance` que cachearlo.
+     * `actividades.avance` que cachearlo. Reutiliza `tareas` si ya viene
+     * eager-cargada (ver ActividadesRelationManager::table()) para no
+     * disparar una query nueva por fila listada.
      */
     public function avance(): ?float
     {
-        return CalculadorAvanceTablero::calcularSobreColeccion($this->tareas()->get());
+        return CalculadorAvanceTablero::calcularSobreColeccion(
+            $this->relationLoaded('tareas') ? $this->tareas : $this->tareas()->get()
+        );
     }
 }
