@@ -33,6 +33,7 @@ class Tarea extends Model
         'estimated_hours',
         'actual_hours',
         'peso',
+        'excluye_calculo',
         'real_inicio',
         'real_fin',
     ];
@@ -49,6 +50,7 @@ class Tarea extends Model
             'estimated_hours' => 'float',
             'actual_hours' => 'float',
             'peso' => 'decimal:2',
+            'excluye_calculo' => 'boolean',
             'real_inicio' => 'date',
             'real_fin' => 'date',
         ];

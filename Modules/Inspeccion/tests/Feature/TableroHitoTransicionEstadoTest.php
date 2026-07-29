@@ -20,7 +20,13 @@ beforeEach(function () {
     $this->grupo = GrupoHito::factory()->create();
 });
 
-it('permite avanzar un hito de Pendiente a En proceso y recalcula el avance del tablero', function () {
+/**
+ * Desde ADR 0009/0012, avance_global se calcula exclusivamente sobre
+ * Tarea (CalculadorAvanceTableroTest cubre esa fórmula) — TableroHito
+ * queda congelado como referencia histórica, ya no la alimenta. Esta
+ * prueba valida solo la máquina de estados, no un recálculo de avance.
+ */
+it('permite avanzar un hito de Pendiente a En proceso', function () {
     $hito = TableroHito::factory()->for($this->tablero)->for($this->grupo, 'grupoHito')->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
         'peso' => 10,
@@ -28,7 +34,7 @@ it('permite avanzar un hito de Pendiente a En proceso y recalcula el avance del 
 
     $hito->update(['estado_avance_id' => EstadoAvance::query()->where('codigo', 'en_proceso')->value('id')]);
 
-    expect((float) $this->tablero->refresh()->avance_global)->toBe(50.0);
+    expect($hito->refresh()->estadoAvance->codigo)->toBe('en_proceso');
 });
 
 it('rechaza saltar de Pendiente directo a Completado sin pasar por En proceso', function () {

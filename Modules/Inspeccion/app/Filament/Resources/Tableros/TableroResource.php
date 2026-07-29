@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\CreateTablero;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\EditTablero;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\ListTableros;
+use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ActividadesRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ControlCambiosRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ObservacionesRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\TableroHitosRelationManager;
@@ -50,6 +51,7 @@ class TableroResource extends Resource
     public static function getRelations(): array
     {
         return [
+            ActividadesRelationManager::class,
             TableroHitosRelationManager::class,
             ObservacionesRelationManager::class,
             ControlCambiosRelationManager::class,

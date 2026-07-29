@@ -11,6 +11,7 @@ use Modules\Inspeccion\Models\GrupoHito;
 use Modules\Inspeccion\Models\Tablero;
 use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Models\Tarea;
+use Modules\Inspeccion\Services\CalculadorAvanceTablero;
 use RuntimeException;
 
 /**
@@ -118,6 +119,11 @@ class MigrarHitosATareasCommand extends Command
                                 'status' => $status,
                                 'priority' => TaskPriority::Media,
                                 'peso' => $hito->peso,
+                                // 'na' se mapea a Bloqueada (§ arriba) pero
+                                // significa "no aplica", no "trabada" — sin
+                                // este flag, se perdería el matiz de
+                                // excluir del cálculo de avance (ADR 0012).
+                                'excluye_calculo' => $codigo === 'na',
                                 'start_date' => $hito->plan_inicio,
                                 'due_date' => $hito->plan_fin,
                                 'real_inicio' => $hito->real_inicio,
@@ -127,6 +133,11 @@ class MigrarHitosATareasCommand extends Command
 
                         $tarea->wasRecentlyCreated ? $tareasCreadas++ : $tareasActualizadas++;
                     });
+
+                    // withoutEvents() arriba evita que TareaObserver::saved()
+                    // dispare el recálculo — se hace una vez por tablero acá,
+                    // no por tarea, para no recalcular 39 veces por nada.
+                    app(CalculadorAvanceTablero::class)->recalcularYGuardar($tablero);
                 });
         });
 

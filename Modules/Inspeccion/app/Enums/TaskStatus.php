@@ -2,12 +2,14 @@
 
 namespace Modules\Inspeccion\Enums;
 
+use Filament\Support\Contracts\HasLabel;
+
 /**
- * Portado de axon (app/Enums/TaskStatus.php) — mismos 5 valores, sin los
- * contratos HasColor/HasIcon/HasLabel de Filament (eso es UI, se agrega
- * cuando el Kanban/Gantt lleguen en PR7/PR8).
+ * Portado de axon (app/Enums/TaskStatus.php) — mismos 5 valores. Implementa
+ * HasLabel para que los Select/badges de Filament (ActividadesRelationManager,
+ * PR6) muestren la etiqueta traducida en vez del value crudo.
  */
-enum TaskStatus: string
+enum TaskStatus: string implements HasLabel
 {
     case Pendiente = 'pendiente';
     case EnProgreso = 'en_progreso';
@@ -18,5 +20,28 @@ enum TaskStatus: string
     public function isCompleted(): bool
     {
         return $this === self::Completada;
+    }
+
+    public function getLabel(): string
+    {
+        return __("inspeccion.tarea.status.{$this->value}");
+    }
+
+    /**
+     * Equivalente al campo `valor` de EstadoAvance (catálogo), para que
+     * CalculadorAvanceTablero pondere sobre Tarea con la misma fórmula.
+     * EnRevision no tiene equivalente histórico (ningún TableroHito
+     * migrado usó ese estado) — 0.9 es una estimación razonable ("el
+     * trabajo está prácticamente hecho, pendiente de confirmar"), ajustable
+     * sin impacto en datos ya migrados si no encaja en la práctica.
+     */
+    public function valor(): float
+    {
+        return match ($this) {
+            self::Pendiente, self::Bloqueada => 0.0,
+            self::EnProgreso => 0.5,
+            self::EnRevision => 0.9,
+            self::Completada => 1.0,
+        };
     }
 }
