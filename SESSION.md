@@ -350,6 +350,17 @@ Suite final: **66/66 tests en verde**, Pint limpio.
 ## Decisiones pendientes
 Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 
+**Antecedente, no bloqueante** (de la ronda de `/revisor` sobre el fix de N+1,
+commits `76ab2e2`/`5a457b1`): `TransicionEstadoGuard` tiene una cache estática
+por request (`$cacheTransicionesValidas`) sin invalidación. Segura hoy
+(requests HTTP nuevos por proceso, sin Octane; tests resetean IDs solos por
+`RefreshDatabase`). El usuario decidió no resolverlo ahora — queda anotado
+para cuando `PR4` del ADR 0009 generalice este guard, o si algún comando
+Artisan de vida larga (como la migración de datos de `PR5`) llega a llamarlo
+muchas veces mientras el catálogo de transiciones cambia a mitad de camino.
+Detalle completo en el comentario de la clase
+(`Modules/Inspeccion/app/Services/TransicionEstadoGuard.php`).
+
 ## Próximo paso concreto
 `/ingeniero` — **PR4 del ADR 0009**: migraciones + modelos `Actividad`/`Tarea`/`TareaLink`,
 generalización de `TransicionEstadoGuard` para códigos string, seeds de

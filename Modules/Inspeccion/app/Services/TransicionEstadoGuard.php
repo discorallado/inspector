@@ -21,6 +21,16 @@ class TransicionEstadoGuard
      * datos viejos entre requests ni de pisar la fila que se acaba de
      * actualizar (esa fila cae en otra key de cache al cambiar su origen).
      *
+     * Antecedente para el futuro (evaluado en /revisor, se decidió no
+     * resolver ahora): esta cache no tiene invalidación. Es segura en
+     * requests HTTP y en tests (RefreshDatabase resetea los IDs solos
+     * entre casos), pero un proceso de vida larga que llame al guard
+     * muchas veces mientras `transiciones_estado_permitidas` cambia a
+     * mitad de camino (p. ej. un comando Artisan de migración de datos,
+     * como el que planea PR5 del ADR 0009) podría ver resultados viejos.
+     * Si eso llega a pasar, la solución es limpiar `$cacheTransicionesValidas`
+     * al terminar ese comando, no sacar la cache.
+     *
      * @var array<string, Collection<int, int>>
      */
     private static array $cacheTransicionesValidas = [];
