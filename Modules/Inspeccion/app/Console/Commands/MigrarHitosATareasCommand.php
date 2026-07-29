@@ -23,9 +23,14 @@ use RuntimeException;
  * EstadoAvance (quedan deprecados hasta el cleanup de PR9).
  *
  * Idempotente: usa updateOrCreate() con clave natural (tablero_id+nombre
- * para Actividad, actividad_id+code para Tarea) — correr el comando varias
- * veces no duplica filas, permite re-correrlo si TableroHito cambia antes
- * de que el módulo deje de usarlo.
+ * para Actividad, tablero_hito_id para Tarea) — correr el comando varias
+ * veces no duplica filas. Se matchea por tablero_hito_id (no por
+ * actividad_id+code): code se deriva de TableroHito.item, un TextInput
+ * libre — matchear por code hacía que editar item entre dos corridas
+ * dejara huérfana la Tarea existente y creara una nueva en su lugar
+ * (hallazgo de /revisor, ver ADR 0012). tablero_hito_id es estable
+ * independiente de lo que se edite en TableroHito (aunque ahora ese
+ * relation manager quedó de solo lectura, ver ADR 0012).
  */
 class MigrarHitosATareasCommand extends Command
 {
@@ -103,10 +108,11 @@ class MigrarHitosATareasCommand extends Command
 
                         $tarea = Tarea::withoutEvents(fn () => Tarea::query()->updateOrCreate(
                             [
-                                'actividad_id' => $actividad->id,
-                                'code' => "{$tablero->tag}-{$hito->item}",
+                                'tablero_hito_id' => $hito->id,
                             ],
                             [
+                                'actividad_id' => $actividad->id,
+                                'code' => "{$tablero->tag}-{$hito->item}",
                                 'nombre' => $hito->nombre,
                                 'descripcion' => $hito->observaciones,
                                 'status' => $status,

@@ -1,10 +1,12 @@
 <?php
 
+use Illuminate\Database\QueryException;
 use Modules\Inspeccion\Database\Seeders\EstadoAvanceSeeder;
 use Modules\Inspeccion\Database\Seeders\EstadoCambioSeeder;
 use Modules\Inspeccion\Database\Seeders\EstadoObservacionSeeder;
 use Modules\Inspeccion\Database\Seeders\TransicionEstadoPermitidaSeeder;
 use Modules\Inspeccion\Enums\TaskStatus;
+use Modules\Inspeccion\Models\Actividad;
 use Modules\Inspeccion\Models\Tarea;
 use Modules\Inspeccion\Models\TransicionEstadoPermitida;
 use Modules\Inspeccion\Services\TransicionEstadoGuard;
@@ -22,17 +24,29 @@ beforeEach(function () {
     $this->seed(TransicionEstadoPermitidaSeeder::class);
 });
 
-it('GAP: nada impide que dos Tareas compartan el mismo code', function () {
-    // tareas.code no tiene índice único (ni en la migración de este
-    // módulo ni en axon, de donde se portó). Si el negocio espera que
-    // "code" sea un identificador legible único (p. ej. para el Gantt
-    // o reportes), esto queda sin garantizar — decisión de diseño para
-    // cuando el Kanban/Gantt (PR7/PR8) o el comando de import (PR5)
-    // generen codes reales, no algo que QA deba resolver unilateralmente.
+it('code es único dentro de la misma Actividad (fix de /revisor, ADR 0012)', function () {
+    // unique(['actividad_id', 'code']) agregado sobre el hallazgo original
+    // ("code no tiene índice único") — mismo patrón que tableros usa con
+    // unique(['proyecto_id', 'tag']): único dentro del padre, no global.
+    $actividad = Actividad::factory()->create();
+    Tarea::factory()->for($actividad)->create(['code' => 'TAR-001']);
+
+    expect(fn () => Tarea::factory()->for($actividad)->create(['code' => 'TAR-001']))
+        ->toThrow(QueryException::class);
+});
+
+it('GAP residual: code SÍ puede repetirse entre Tareas de distinta Actividad', function () {
+    // El unique de arriba es compuesto (actividad_id+code), no global —
+    // decisión deliberada (mismo criterio que tableros.tag), no un
+    // descuido. Si en algún momento el negocio necesita que "code" sea
+    // legible-único en todo el sistema (p. ej. para el Gantt/reportes de
+    // PR7/PR8), esto queda sin garantizar — decisión de diseño futura,
+    // no algo que QA/revisor deba resolver unilateralmente.
     $t1 = Tarea::factory()->create(['code' => 'TAR-001']);
     $t2 = Tarea::factory()->create(['code' => 'TAR-001']);
 
     expect($t1->code)->toBe($t2->code);
+    expect($t1->actividad_id)->not->toBe($t2->actividad_id);
     expect(Tarea::query()->where('code', 'TAR-001')->count())->toBe(2);
 });
 

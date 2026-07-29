@@ -168,16 +168,12 @@ it('no deja Actividades a medio crear si el comando falla a mitad de camino (rol
     expect(Tarea::query()->count())->toBe(0);
 });
 
-it('GAP /qa: editar item de un TableroHito entre dos corridas deja una Tarea huérfana en vez de actualizarla', function () {
-    // TableroHitosRelationManager sigue activo y editable (TableroHito no
-    // es de solo lectura hasta el cleanup de PR9) — la clave natural de
-    // Tarea es actividad_id+code, y code se genera con el item. Si item
-    // cambia entre corridas, updateOrCreate() no encuentra la Tarea vieja
-    // (code distinto) y crea una nueva, dejando la anterior huérfana con
-    // datos ya desactualizados. No es algo que /qa deba resolver
-    // unilateralmente (¿updateOrCreate por hito_id en vez de por code?
-    // ¿hacer TableroHito de solo lectura ya?) — decisión para /arquitecto
-    // antes de PR9.
+it('cierra el GAP /qa: editar item de un TableroHito entre dos corridas actualiza la misma Tarea, no crea una huérfana', function () {
+    // Fix de /revisor (checkpoint pre-PR6, ADR 0012): el matcheo pasó de
+    // actividad_id+code (code se deriva de item, un TextInput libre) a
+    // tablero_hito_id, estable independiente de lo que cambie en
+    // TableroHito. TableroHitosRelationManager además quedó de solo
+    // lectura en el mismo fix, como defensa adicional.
     TableroHito::withoutEvents(fn () => $hito = TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
         'item' => '1.1',
@@ -186,10 +182,14 @@ it('GAP /qa: editar item de un TableroHito entre dos corridas deja una Tarea hu�
 
     Artisan::call('inspeccion:migrar-hitos-a-tareas');
     expect(Tarea::query()->count())->toBe(1);
+    $tareaId = Tarea::query()->first()->id;
 
     $hito->update(['item' => '1.2']);
     Artisan::call('inspeccion:migrar-hitos-a-tareas');
 
-    expect(Tarea::query()->count())->toBe(2);
-    expect(Tarea::query()->pluck('code')->sort()->values()->all())->toBe(['T1-1.1', 'T1-1.2']);
+    expect(Tarea::query()->count())->toBe(1);
+    $tarea = Tarea::query()->first();
+    expect($tarea->id)->toBe($tareaId)
+        ->and($tarea->code)->toBe('T1-1.2')
+        ->and($tarea->tablero_hito_id)->toBe($hito->id);
 });
