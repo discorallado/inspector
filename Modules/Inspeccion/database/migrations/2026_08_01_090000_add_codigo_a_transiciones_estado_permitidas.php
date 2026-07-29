@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -32,6 +33,14 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Sin esto, el rollback falla en cuanto exista al menos una fila
+        // tipo_catalogo = 'tarea_status' sembrada (TransicionEstadoPermitidaSeeder
+        // las crea con estado_destino_id NULL) — el ALTER a NOT NULL de abajo
+        // las rechaza. Esas filas solo existen porque este mismo up() habilitó
+        // las columnas de código; al revertir el esquema, revierte los datos
+        // que dependían de él.
+        DB::table('transiciones_estado_permitidas')->whereNull('estado_destino_id')->delete();
+
         Schema::table('transiciones_estado_permitidas', function (Blueprint $table) {
             $table->dropIndex('transiciones_estado_tipo_origen_codigo_idx');
             $table->dropColumn(['estado_origen_codigo', 'estado_destino_codigo']);
