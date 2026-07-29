@@ -35,6 +35,15 @@ class TransicionEstadoGuard
      */
     private static array $cacheTransicionesValidas = [];
 
+    /**
+     * Mismo propósito que $cacheTransicionesValidas, para las variantes
+     * *PorCodigo (ADR 0009: Tarea.status es un enum, no una tabla de
+     * catálogo con id).
+     *
+     * @var array<string, Collection<int, string>>
+     */
+    private static array $cacheTransicionesValidasPorCodigo = [];
+
     public function puedeTransicionar(string $tipoCatalogo, ?int $origenId, int $destinoId): bool
     {
         if ($origenId === $destinoId) {
@@ -73,5 +82,49 @@ class TransicionEstadoGuard
         // el clone, ese push() corrompería la entrada de la cache
         // compartida entre requests-fila del mismo render de tabla.
         return clone self::$cacheTransicionesValidas[$key];
+    }
+
+    /**
+     * Variante de puedeTransicionar() para catálogos basados en código
+     * string en vez de id de catálogo (ADR 0009: Tarea.status). Métodos
+     * separados en vez de ensanchar puedeTransicionar()/validar() a tipos
+     * unión (int|string): el tipo de $destinoId no alcanza para elegir
+     * columna cuando $origenId es null (creación), y sniffear el tipo acá
+     * sería frágil — un id numérico pasado por error como string caería
+     * en la rama equivocada en silencio.
+     */
+    public function puedeTransicionarPorCodigo(string $tipoCatalogo, ?string $origenCodigo, string $destinoCodigo): bool
+    {
+        if ($origenCodigo === $destinoCodigo) {
+            return true;
+        }
+
+        return TransicionEstadoPermitida::query()
+            ->where('tipo_catalogo', $tipoCatalogo)
+            ->where('estado_origen_codigo', $origenCodigo)
+            ->where('estado_destino_codigo', $destinoCodigo)
+            ->exists();
+    }
+
+    public function validarPorCodigo(string $tipoCatalogo, ?string $origenCodigo, string $destinoCodigo): void
+    {
+        if (! $this->puedeTransicionarPorCodigo($tipoCatalogo, $origenCodigo, $destinoCodigo)) {
+            throw new TransicionEstadoInvalidaException($tipoCatalogo, $origenCodigo, $destinoCodigo);
+        }
+    }
+
+    /**
+     * @return Collection<int, string> códigos de estado_destino_codigo alcanzables desde $origenCodigo.
+     */
+    public function transicionesValidasDesdePorCodigo(string $tipoCatalogo, ?string $origenCodigo): Collection
+    {
+        $key = $tipoCatalogo.':'.($origenCodigo ?? 'null');
+
+        self::$cacheTransicionesValidasPorCodigo[$key] ??= TransicionEstadoPermitida::query()
+            ->where('tipo_catalogo', $tipoCatalogo)
+            ->where('estado_origen_codigo', $origenCodigo)
+            ->pluck('estado_destino_codigo');
+
+        return clone self::$cacheTransicionesValidasPorCodigo[$key];
     }
 }

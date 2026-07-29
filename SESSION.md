@@ -7,13 +7,13 @@
 ---
 
 ## Última actualización
-2026-07-31
+2026-07-29
 
 ## Módulo / feature en curso
-**Arquitectura cerrada para portar Actividad/Tarea desde `axon`** (ADR
-0009) — reemplaza el kanban de hitos que había quedado diferido en el
-ADR 0008. Sin implementar todavía, próximo paso: `/ingeniero` en PR4. Ver
-detalle completo más abajo.
+**PR4 del ADR 0009 implementado** (modelo de datos `Actividad`/`Tarea`/
+`TareaLink` + guard generalizado, ADR 0010) — próximo paso: `/revisor`
+sobre este diff, después `/ingeniero` en PR5 (migración de los 234
+hitos). Ver detalle completo más abajo.
 
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
 seguimiento en terreno. **El usuario pidió revertir el kanban de
@@ -23,7 +23,67 @@ seguimiento de hitos/tareas de `Tablero`, diferido hasta definir la
 integración con `axon` (ver abajo, sección grande nueva). PR3 (theme
 custom, ADR 0007) sigue vigente sin cambios.
 
-## Estado actual (2026-07-31) — ADR 0009: integración Actividad/Tarea desde axon
+## Estado actual (2026-07-29) — PR4: modelo de datos Actividad/Tarea (ADR 0010)
+
+Sesión de `/ingeniero`. Hallazgo importante antes de escribir código: la
+sesión anterior asumió `axon` en `/home/ubuntu/axon` (no existe en este
+entorno) — el repo real está en `/home/sebas/axon`. Se portaron tipos de
+columna, nombres de enum (`TaskStatus`: Pendiente/EnProgreso/EnRevision/
+Completada/Bloqueada; `TaskPriority`: Baja/Media/Alta/Critica, ambos ya
+en español en axon) y relaciones desde el código fuente real, no de
+memoria.
+
+- **Migraciones**: `transiciones_estado_permitidas` gana columnas de
+  código (`estado_origen_codigo`/`estado_destino_codigo`) en paralelo a
+  las de id — no se reescribieron las 3 filas de catálogo existentes a
+  texto, menor blast radius. `actividades`/`tareas`/`tarea_links` con
+  columnas exactas del ADR 0009 §2.2. **Id autoincremental, no ULID como
+  axon** — consistencia con el resto de Inspeccion, el rename de PK al
+  integrar a axon es mecánico. `actividades.tablero_id` con
+  `cascadeOnDelete()` (como `tablero_hitos`, la entidad que reemplaza),
+  no `restrictOnDelete()` como las tablas de auditoría de calidad.
+  Validado con `migrate` + `migrate:rollback --step=4` contra MariaDB
+  real (ddev).
+- **Guard generalizado**: métodos paralelos `puedeTransicionarPorCodigo`/
+  `validarPorCodigo`/`transicionesValidasDesdePorCodigo`, no tipos unión
+  sobre los existentes — `transicionesValidasDesde()` no recibe destino,
+  así que con origen `null` no hay forma de inferir catálogo-vs-código
+  por tipo. Cero riesgo para las 3 llamadas ya probadas basadas en id.
+  Mismo patrón cache-por-request-con-clone que ya se corrigió en
+  `/revisor` sobre el N+1 anterior, aplicado desde el arranque acá.
+- **Matriz de transiciones de `Tarea.status`**: axon no la valida
+  (cualquier salto vale); el ADR 0009 dejó esto sin definir. Se le
+  presentó al usuario antes de sembrarla — aprobó la matriz con
+  reapertura: `null→Pendiente→EnProgreso→EnRevision→Completada`, rebote
+  `EnRevision→EnProgreso`, y `Bloqueada` alcanzable desde
+  `Pendiente`/`EnProgreso` y viceversa. Sin salto directo a `Completada`
+  ni reapertura de `Completada`.
+- **`TareaObserver`**: mismo patrón que `ObservacionObserver`/
+  `ControlCambioObserver`, valida `status` dirty en `saving()`.
+- **Diferido a propósito**: `predecesoras()`/`sucesoras()` de `Tarea`
+  (axon distingue Tarea/Actividad en `tarea_links` vía prefijo de ULID;
+  acá con id autoincremental por tabla hay colisión real de ids entre
+  ambas — se resuelve en PR8 cuando el Gantt lo necesite de verdad,
+  inventar un discriminador ahora sin uso sería diseñar a ciegas).
+  Policies/abilities de la matriz de permisos del ADR 0009 §4: no hay
+  recurso Filament todavía que las invoque, llegan en PR6.
+- **`/revisor` corrido sobre el diff, 2 hallazgos reales corregidos**:
+  (1) el `down()` de la migración de columnas de código no era
+  reversible en la práctica una vez que el seeder corría (`ALTER` a
+  `NOT NULL` rechazado por las 8 filas `tarea_status` con
+  `estado_destino_id NULL`) — confirmado con rollback real contra
+  MariaDB después de sembrar datos, corregido borrando esas filas antes
+  del `ALTER`; (2) `actividades`/`tareas` tenían `cascadeOnDelete()` sin
+  `SoftDeletes` (igual que `tablero_hitos`, pero sin la protección que sí
+  tiene el historial de calidad) — corregido con `SoftDeletes` +
+  `restrictOnDelete()`, mismo patrón que `Observacion`/`ControlCambio`.
+- 20 tests (guard *PorCodigo, modelos/relaciones, `TareaObserver`,
+  rollback de migración, borrado lógico/`restrictOnDelete`). Suite
+  completa: **103 passed, 1 risky preexistente** (sin fallas), Pint
+  limpio. Detalle completo en
+  [ADR 0010](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md).
+
+## Estado histórico (2026-07-31) — ADR 0009: integración Actividad/Tarea desde axon
 
 Sesión de `/arquitecto` cerrando la pregunta que quedó diferida en el ADR
 0008. Revisé el código **real** de `axon` en `/home/ubuntu/axon` (no
@@ -354,19 +414,26 @@ Ninguna de arquitectura — el diseño quedó cerrado y documentado en el ADR.
 commits `76ab2e2`/`5a457b1`): `TransicionEstadoGuard` tiene una cache estática
 por request (`$cacheTransicionesValidas`) sin invalidación. Segura hoy
 (requests HTTP nuevos por proceso, sin Octane; tests resetean IDs solos por
-`RefreshDatabase`). El usuario decidió no resolverlo ahora — queda anotado
-para cuando `PR4` del ADR 0009 generalice este guard, o si algún comando
-Artisan de vida larga (como la migración de datos de `PR5`) llega a llamarlo
-muchas veces mientras el catálogo de transiciones cambia a mitad de camino.
-Detalle completo en el comentario de la clase
+`RefreshDatabase`). El usuario decidió no resolverlo ahora. `PR4` (ver
+abajo) generalizó el guard con los métodos `*PorCodigo` y aplicó el mismo
+patrón cache-con-clone desde el arranque — la cache nueva
+(`$cacheTransicionesValidasPorCodigo`) hereda el mismo antecedente: sin
+invalidación, seguro hoy, pero cualquier comando Artisan de vida larga
+(como la migración de datos de `PR5`) que llame al guard mientras el
+catálogo de transiciones cambia a mitad de camino podría ver resultados
+viejos. Detalle completo en el comentario de la clase
 (`Modules/Inspeccion/app/Services/TransicionEstadoGuard.php`).
 
 ## Próximo paso concreto
-`/ingeniero` — **PR4 del ADR 0009**: migraciones + modelos `Actividad`/`Tarea`/`TareaLink`,
-generalización de `TransicionEstadoGuard` para códigos string, seeds de
-transición para `TaskStatus`. Ver
+`/revisor` de PR4 ya corrió (2 hallazgos reales corregidos, ver arriba) —
+pendiente, no bloqueante: abrir su PR en GitHub (mismo trámite
+retroactivo que PR3/ADR 0008). `/ingeniero` — **PR5 del ADR 0009**:
+comando de migración de datos (234 hitos existentes → `Actividad`/
+`Tarea`). Ver
 [`0009-integracion-actividad-tarea-desde-axon.md`](Modules/Inspeccion/docs/adr/0009-integracion-actividad-tarea-desde-axon.md)
-§8 para el plan completo (PR4-PR9). La autonumeración de catálogos del
+§8 para el plan completo (PR4-PR9) y
+[`0010-pr4-actividad-tarea-modelo-de-datos.md`](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md)
+para el detalle de lo implementado en PR4. La autonumeración de catálogos del
 ADR 0006 (los 9 simples, sin `TableroHito.item` que quedó cancelado)
 sigue pendiente pero sin relación con esto — se puede retomar en
 cualquier momento, no depende de PR4-PR9.

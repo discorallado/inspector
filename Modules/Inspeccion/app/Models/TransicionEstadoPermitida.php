@@ -17,10 +17,14 @@ class TransicionEstadoPermitida extends Model
 
     public const TIPO_ESTADO_CAMBIO = 'estado_cambio';
 
+    public const TIPO_TAREA_STATUS = 'tarea_status';
+
     protected $fillable = [
         'organization_id',
         'tipo_catalogo',
         'estado_origen_id',
         'estado_destino_id',
+        'estado_origen_codigo',
+        'estado_destino_codigo',
     ];
 }
