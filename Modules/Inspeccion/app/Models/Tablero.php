@@ -43,6 +43,11 @@ class Tablero extends Model
         return $this->hasMany(TableroHito::class);
     }
 
+    public function actividades(): HasMany
+    {
+        return $this->hasMany(Actividad::class)->orderBy('orden');
+    }
+
     public function observaciones(): HasMany
     {
         return $this->hasMany(Observacion::class);
