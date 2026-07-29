@@ -20,8 +20,9 @@ hallazgos de `/revisor` corregidos (N+1 en la columna avance, test
 faltante de `TareaObserver::deleted()`) y una limpieza de scaffold sin
 uso (`InspeccionController`/rutas/build propio del módulo, nunca usados;
 acoplamiento muerto en `TableroHitoObserver`). Todo mergeado a `main` vía
-PR (link se agrega abajo al abrirlo). Próximo paso: PR7 del ADR 0009
-(Kanban de `Tarea`). Ver detalle completo más abajo.
+[PR #11](https://github.com/discorallado/inspector/pull/11). Próximo
+paso: PR7 del ADR 0009 (Kanban de `Tarea`). Ver detalle completo más
+abajo.
 
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
 seguimiento en terreno. El kanban de Observaciones/Control de Cambios
