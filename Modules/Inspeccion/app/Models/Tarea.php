@@ -20,6 +20,7 @@ class Tarea extends Model
         'organization_id',
         'actividad_id',
         'parent_tarea_id',
+        'tablero_hito_id',
         'code',
         'nombre',
         'descripcion',
@@ -32,6 +33,7 @@ class Tarea extends Model
         'estimated_hours',
         'actual_hours',
         'peso',
+        'excluye_calculo',
         'real_inicio',
         'real_fin',
     ];
@@ -48,6 +50,7 @@ class Tarea extends Model
             'estimated_hours' => 'float',
             'actual_hours' => 'float',
             'peso' => 'decimal:2',
+            'excluye_calculo' => 'boolean',
             'real_inicio' => 'date',
             'real_fin' => 'date',
         ];
@@ -66,6 +69,16 @@ class Tarea extends Model
     public function subtareas(): HasMany
     {
         return $this->hasMany(Tarea::class, 'parent_tarea_id');
+    }
+
+    /**
+     * Puente temporal con el sistema viejo (ver ADR 0012): clave de
+     * matcheo estable para MigrarHitosATareasCommand, independiente del
+     * contenido editable de TableroHito. Se va con el cleanup de PR9.
+     */
+    public function tableroHito(): BelongsTo
+    {
+        return $this->belongsTo(TableroHito::class);
     }
 
     // predecesoras()/sucesoras() (relaciones vía tarea_links) se agregan

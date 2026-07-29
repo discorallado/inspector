@@ -6,17 +6,19 @@
 > sigue siendo la referencia de negocio para Observaciones, Control de
 > Cambios y Checklist (§3.3-3.7), implementados tal cual acá.
 
-> **Nota de superación parcial (2026-07-29)**: el seguimiento de avance
-> ponderado de §3.2/§4 (`TableroHito`/`grupo` como string/FK) fue
+> **Nota de superación parcial (actualizada 2026-08-04)**: el seguimiento de
+> avance ponderado de §3.2/§4 (`TableroHito`/`grupo` como string/FK) fue
 > reemplazado por el modelo `Actividad`/`Tarea` portado desde `axon`, para
 > reutilizar su Kanban/Gantt en vez de construir uno propio — ver
 > [ADR 0009](adr/0009-integracion-actividad-tarea-desde-axon.md),
-> [0010](adr/0010-pr4-actividad-tarea-modelo-de-datos.md) y
-> [0011](adr/0011-pr5-migracion-datos-hitos-a-tareas.md). `TableroHito`/
-> `GrupoHito`/`estado_avance` (§3.2, §3.6) quedan deprecados, no borrados,
-> hasta el cleanup de PR9 — la fórmula de avance ponderado de §4 sigue
-> vigente en espíritu, PR6 la adapta para sumar sobre `Tarea.peso` en vez
-> de `TableroHito.peso`.
+> [0010](adr/0010-pr4-actividad-tarea-modelo-de-datos.md),
+> [0011](adr/0011-pr5-migracion-datos-hitos-a-tareas.md) y
+> [0013](adr/0013-pr6-actividades-relation-manager-y-calculador-tarea.md).
+> `TableroHito`/`GrupoHito`/`estado_avance` (§3.2, §3.6) quedan deprecados
+> y de solo lectura (no borrados), hasta el cleanup de PR9 — la fórmula de
+> avance ponderado de §4 sigue vigente en espíritu: desde PR6,
+> `CalculadorAvanceTablero` suma exclusivamente sobre `Tarea.peso` (ya no
+> `TableroHito.peso`).
 
 ## 1. Alcance
 

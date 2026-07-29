@@ -1,8 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Modules\Inspeccion\Http\Controllers\InspeccionController;
-
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('inspeccions', InspeccionController::class)->names('inspeccion');
-});
+// Sin rutas propias: este módulo no expone una API REST, solo el panel de
+// Filament. Se queda vacío como scaffold estándar de nwidart/laravel-modules
+// por si en algún momento se necesita una API.

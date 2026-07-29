@@ -7,30 +7,89 @@
 ---
 
 ## Última actualización
-2026-07-29
+2026-08-04
 
 ## Módulo / feature en curso
-**PR4 y PR5 del ADR 0009 implementados, revisados y con QA** (modelo de
-datos `Actividad`/`Tarea`/`TareaLink` + guard generalizado, ADR 0010;
-comando de migración de los 234 hitos existentes, ADR 0011). PRs
-retroactivos de registro abiertos en GitHub:
-[#5](https://github.com/discorallado/inspector/pull/5) (PR4),
-[#6](https://github.com/discorallado/inspector/pull/6) (PR5) — igual que
-[#3](https://github.com/discorallado/inspector/pull/3)/[#4](https://github.com/discorallado/inspector/pull/4)
-para PR3/ADR 0008, no se mergean contra `main` (ya está ahí), son solo
-para que GitHub muestre el diff real con el detalle de revisión.
-Próximo paso: `/ingeniero` en PR6 (`ActividadesRelationManager` +
-`CalculadorAvanceTablero` adaptado). Ver detalle completo más abajo.
+**PR6 del ADR 0009 implementado, revisado y con cleanup** —
+`ActividadesRelationManager` + `TareasRelationManager` (Filament) y
+`CalculadorAvanceTablero` adaptado a sumar exclusivamente sobre
+`Tarea.peso` (ADR 0013). Antes de PR6: 3 fixes de checkpoint sobre
+Actividad/Tarea (ADR 0012 — matcheo por `tablero_hito_id`, `unique` de
+`code`, `TableroHitosRelationManager` de solo lectura). Después de PR6: 2
+hallazgos de `/revisor` corregidos (N+1 en la columna avance, test
+faltante de `TareaObserver::deleted()`) y una limpieza de scaffold sin
+uso (`InspeccionController`/rutas/build propio del módulo, nunca usados;
+acoplamiento muerto en `TableroHitoObserver`). Todo mergeado a `main` vía
+[PR #11](https://github.com/discorallado/inspector/pull/11). Próximo
+paso: PR7 del ADR 0009 (Kanban de `Tarea`). Ver detalle completo más
+abajo.
 
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
-seguimiento en terreno. **El usuario pidió revertir el kanban de
-Observaciones/Control de Cambios a tabla + select** (ADR 0008) tras
-probar PR1/PR2 — el kanban como concepto no se descarta, queda para el
-seguimiento de hitos/tareas de `Tablero`, diferido hasta definir la
-integración con `axon` (ver abajo, sección grande nueva). PR3 (theme
-custom, ADR 0007) sigue vigente sin cambios.
+seguimiento en terreno. El kanban de Observaciones/Control de Cambios
+quedó revertido a tabla + select (ADR 0008) — el kanban como concepto se
+retoma en PR7 para `Tarea`. PR3 (theme custom, ADR 0007) sigue vigente
+sin cambios.
 
-## Estado actual (2026-07-29) — Retroactivos PR4/PR5 en GitHub + /qa del gap de idempotencia
+## Estado actual (2026-08-04) — PR6: ActividadesRelationManager + CalculadorAvanceTablero sobre Tarea (ADR 0013), + limpieza post-revisor
+
+Sesión de `/ingeniero` continuando directo desde el checkpoint de fixes
+(ADR 0012), cerrada con `/revisor` y una limpieza de scaffold pedida por
+el usuario ("eliminar la basura acumulada hasta ahora").
+
+- **`CalculadorAvanceTablero`** pasa a sumar exclusivamente sobre
+  `Tarea.peso` (vía `Actividad`) — confirmado contra ADR 0009 §2.2 que no
+  hay período de doble fuente. `TaskStatus::valor()` (nuevo) reemplaza a
+  `EstadoAvance.valor`; `Tarea.excluye_calculo` (columna nueva, boolean,
+  decisión tomada con el usuario vía pregunta explícita) reemplaza a
+  `EstadoAvance.codigo='na'` — necesaria porque `Bloqueada` significa dos
+  cosas distintas en el negocio (N/A histórico vs. bloqueada de verdad) y
+  confundirlas en un solo enum habría sido incorrecto. Fórmula extraída a
+  `calcularSobreColeccion()` (estática) para reutilizarse en
+  `Actividad::avance()` sin duplicar lógica.
+- **UI con alcance reducido a propósito**: en vez del accordion custom de
+  axon (~1100 líneas, 3 iteraciones), `ActividadesRelationManager` (bajo
+  `TableroResource`, CRUD de Actividad) con drill-down hacia un nuevo
+  `ActividadResource` oculto de navegación que aloja `TareasRelationManager`
+  (CRUD de Tarea) — `Tablero::tareas()` es un `HasManyThrough` sin soporte
+  de `create()`, por eso el CRUD de Tarea no puede colgar directo de
+  Tablero. La UX de accordion completa queda como follow-up si se
+  necesita.
+- **Policies nuevas** `ActividadPolicy`/`TareaPolicy` + permisos
+  (`tablero_actividad.gestionar`, `tablero_tarea.actualizar`,
+  `tablero_tarea.asignar`). `TaskStatus`/`TaskPriority` implementan
+  `HasLabel` (necesario para los `Select`/badges nuevos).
+- **`/revisor` sobre el diff de PR6, 2 hallazgos reales corregidos**: (1)
+  N+1 en la columna `avance` de `ActividadesRelationManager` (una query
+  por fila, además del `withCount` ya eficiente de `tareas_count`) —
+  arreglado con eager load de `tareas` + reutilización de la relación ya
+  cargada en `Actividad::avance()`; (2) el hook nuevo
+  `TareaObserver::deleted()` no tenía ningún test — agregado. Dos
+  hallazgos de baja severidad señalados sin tocar (acoplamiento muerto en
+  `TableroHitoObserver`, índice de `ActividadResource` sin scope por
+  Tablero) — el primero se resolvió después en la limpieza, el segundo se
+  dejó (quitar el índice arriesgaba romper el redirect/breadcrumb de
+  `EditRecord` cuando no hay `previousUrl`, no vale el riesgo para un
+  hallazgo de exposición nula en la práctica).
+- **Limpieza pedida explícitamente por el usuario** tras el `/revisor`:
+  eliminado el scaffold default de `nwidart/laravel-modules` que nunca se
+  usó (`InspeccionController` con vistas "Hello World", sus rutas
+  web/api, y un segundo pipeline de build del módulo —
+  `vite.config.js`/`package.json`/`resources/assets` — que ni el build
+  root ni ningún código real referenciaba). `TableroHitoObserver` dejó de
+  inyectar `CalculadorAvanceTablero` (sus hooks `saved()`/`deleted()` ya
+  no tenían efecto real desde que el cálculo es exclusivo sobre `Tarea`).
+  No se tocó `TableroHito`/`GrupoHito`/`EstadoAvance` ni
+  `TableroHitosRelationManager` en sí — ese cleanup sigue reservado para
+  PR9.
+- Suite completa: **129 passed, 1 risky preexistente** (sin fallas), Pint
+  limpio. Verificado contra MariaDB real (ddev): `migrate:fresh --seed` +
+  `inspeccion:migrar-hitos-a-tareas` corrido dos veces (idempotente),
+  `avance_global` verificado a mano contra varios tableros reales, y
+  `route:list` confirma que las rutas muertas ya no existen tras la
+  limpieza. Detalle completo en
+  [ADR 0013](Modules/Inspeccion/docs/adr/0013-pr6-actividades-relation-manager-y-calculador-tarea.md).
+
+## Estado histórico (2026-07-29) — Retroactivos PR4/PR5 en GitHub + /qa del gap de idempotencia
 
 El usuario pidió retomar los pendientes de PR4/PR5 con `/revisor`, aplicar
 `/qa`, y seguir con los PRs siguientes repitiendo el ciclo — se ejecutó la
@@ -493,26 +552,22 @@ viejos. Detalle completo en el comentario de la clase
 (`Modules/Inspeccion/app/Services/TransicionEstadoGuard.php`).
 
 ## Próximo paso concreto
-`/ingeniero` — **PR6 del ADR 0009**: `ActividadesRelationManager`
-(reemplaza `TableroHitosRelationManager`) + `CalculadorAvanceTablero`
-adaptado a sumar sobre `Tarea.peso` (ahí se resuelve el matiz "excluido
-del cálculo" para `Bloqueada`/`na` que quedó pendiente en PR5, ver ADR
-0011 §2). El usuario pidió repetir el ciclo `/ingeniero` → `/revisor` →
-`/qa` para PR6, PR7 (Kanban), PR8 (Gantt DHTMLX) y PR9 (cleanup) hasta
-completarlos todos — quedan trackeados como tareas pendientes (#12-#15
-en el TaskList de la sesión que los creó). Antes de PR7 (Gantt/Kanban)
-conviene resolver el gap de idempotencia del comando de migración
-señalado arriba (¿`TableroHito` de solo lectura ya?), porque PR9 va a
-depender de que los datos migrados sean confiables. Ver
+`/ingeniero` — **PR7 del ADR 0009**: Kanban de `Tarea` (retoma
+`TaskStatus`/`TaskPriority`, que ya implementan `HasLabel` desde PR6—
+falta `HasColor`/`HasIcon` si el diseño del kanban los pide). Después:
+PR8 (Gantt DHTMLX) y PR9 (cleanup de `TableroHito`/`GrupoHito`/
+`EstadoAvance` y `TableroHitosRelationManager` — reservado a propósito,
+el usuario pidió no adelantarlo en la sesión de PR6). Ver
 [`0009-integracion-actividad-tarea-desde-axon.md`](Modules/Inspeccion/docs/adr/0009-integracion-actividad-tarea-desde-axon.md)
 §8 para el plan completo (PR4-PR9),
-[`0010-pr4-actividad-tarea-modelo-de-datos.md`](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md)
-y
-[`0011-pr5-migracion-datos-hitos-a-tareas.md`](Modules/Inspeccion/docs/adr/0011-pr5-migracion-datos-hitos-a-tareas.md)
-para el detalle de lo implementado. La autonumeración de catálogos del
-ADR 0006 (los 9 simples, sin `TableroHito.item` que quedó cancelado)
-sigue pendiente pero sin relación con esto — se puede retomar en
-cualquier momento, no depende de PR4-PR9.
+[`0010`](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md),
+[`0011`](Modules/Inspeccion/docs/adr/0011-pr5-migracion-datos-hitos-a-tareas.md),
+[`0012`](Modules/Inspeccion/docs/adr/0012-fixes-checkpoint-pre-pr6.md) y
+[`0013`](Modules/Inspeccion/docs/adr/0013-pr6-actividades-relation-manager-y-calculador-tarea.md)
+para el detalle de lo implementado hasta PR6. La autonumeración de
+catálogos del ADR 0006 (los 9 simples, sin `TableroHito.item` que quedó
+cancelado) sigue pendiente pero sin relación con esto — se puede retomar
+en cualquier momento, no depende de PR4-PR9.
 
 ---
 

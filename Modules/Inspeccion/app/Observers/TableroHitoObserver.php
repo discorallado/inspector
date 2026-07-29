@@ -4,15 +4,16 @@ namespace Modules\Inspeccion\Observers;
 
 use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Models\TransicionEstadoPermitida;
-use Modules\Inspeccion\Services\CalculadorAvanceTablero;
 use Modules\Inspeccion\Services\TransicionEstadoGuard;
 
+/**
+ * Desde PR6 (ADR 0013), avance_global se calcula exclusivamente sobre Tarea
+ * — este observer ya no dispara ningún recálculo, solo valida la máquina
+ * de estados de TableroHito (referencia histórica congelada, ver ADR 0012).
+ */
 class TableroHitoObserver
 {
-    public function __construct(
-        private readonly TransicionEstadoGuard $guard,
-        private readonly CalculadorAvanceTablero $calculador,
-    ) {}
+    public function __construct(private readonly TransicionEstadoGuard $guard) {}
 
     public function saving(TableroHito $hito): void
     {
@@ -25,15 +26,5 @@ class TableroHitoObserver
             $hito->exists ? $hito->getOriginal('estado_avance_id') : null,
             $hito->estado_avance_id,
         );
-    }
-
-    public function saved(TableroHito $hito): void
-    {
-        $this->calculador->recalcularYGuardar($hito->tablero);
-    }
-
-    public function deleted(TableroHito $hito): void
-    {
-        $this->calculador->recalcularYGuardar($hito->tablero);
     }
 }

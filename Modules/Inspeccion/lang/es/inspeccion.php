@@ -65,6 +65,52 @@ return [
         ],
     ],
 
+    'actividad' => [
+        'singular' => 'Actividad',
+        'plural' => 'Actividades',
+        'campos' => [
+            'nombre' => 'Nombre',
+            'descripcion' => 'Descripción',
+            'orden' => 'Orden',
+            'start_date' => 'Inicio planificado',
+            'end_date' => 'Fin planificado',
+            'cantidad_tareas' => 'Tareas',
+            'avance' => 'Avance',
+        ],
+    ],
+
+    'tarea' => [
+        'singular' => 'Tarea',
+        'plural' => 'Tareas',
+        'campos' => [
+            'actividad' => 'Actividad',
+            'code' => 'Código',
+            'nombre' => 'Nombre',
+            'descripcion' => 'Descripción',
+            'status' => 'Estado',
+            'priority' => 'Prioridad',
+            'peso' => 'Peso',
+            'excluye_calculo' => 'Excluye del cálculo',
+            'start_date' => 'Inicio planificado',
+            'due_date' => 'Fin planificado',
+            'real_inicio' => 'Inicio real',
+            'real_fin' => 'Fin real',
+        ],
+        'status' => [
+            'pendiente' => 'Pendiente',
+            'en_progreso' => 'En Progreso',
+            'en_revision' => 'En Revisión',
+            'completada' => 'Completada',
+            'bloqueada' => 'Bloqueada',
+        ],
+        'priority' => [
+            'baja' => 'Baja',
+            'media' => 'Media',
+            'alta' => 'Alta',
+            'critica' => 'Crítica',
+        ],
+    ],
+
     'visita_inspeccion' => [
         'singular' => 'Visita de Inspección',
         'plural' => 'Visitas de Inspección',

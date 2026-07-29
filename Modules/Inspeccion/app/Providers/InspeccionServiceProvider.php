@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Gate;
 use Modules\Inspeccion\Console\Commands\MigrarHitosATareasCommand;
+use Modules\Inspeccion\Models\Actividad;
 use Modules\Inspeccion\Models\ChecklistEjecucion;
 use Modules\Inspeccion\Models\ChecklistEjecucionItem;
 use Modules\Inspeccion\Models\ChecklistItemLibrary;
@@ -30,6 +31,7 @@ use Modules\Inspeccion\Observers\ControlCambioObserver;
 use Modules\Inspeccion\Observers\ObservacionObserver;
 use Modules\Inspeccion\Observers\TableroHitoObserver;
 use Modules\Inspeccion\Observers\TareaObserver;
+use Modules\Inspeccion\Policies\ActividadPolicy;
 use Modules\Inspeccion\Policies\CatalogoPolicy;
 use Modules\Inspeccion\Policies\ChecklistEjecucionItemPolicy;
 use Modules\Inspeccion\Policies\ChecklistEjecucionPolicy;
@@ -38,6 +40,7 @@ use Modules\Inspeccion\Policies\ObservacionPolicy;
 use Modules\Inspeccion\Policies\ProyectoPolicy;
 use Modules\Inspeccion\Policies\TableroHitoPolicy;
 use Modules\Inspeccion\Policies\TableroPolicy;
+use Modules\Inspeccion\Policies\TareaPolicy;
 use Modules\Inspeccion\Policies\UserPolicy;
 use Modules\Inspeccion\Policies\VisitaInspeccionPolicy;
 use Nwidart\Modules\Support\ModuleServiceProvider;
@@ -111,6 +114,8 @@ class InspeccionServiceProvider extends ModuleServiceProvider
         Gate::policy(ChecklistEjecucion::class, ChecklistEjecucionPolicy::class);
         Gate::policy(ChecklistEjecucionItem::class, ChecklistEjecucionItemPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Actividad::class, ActividadPolicy::class);
+        Gate::policy(Tarea::class, TareaPolicy::class);
 
         foreach ([
             GrupoHito::class,

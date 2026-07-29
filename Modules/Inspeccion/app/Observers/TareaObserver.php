@@ -5,11 +5,15 @@ namespace Modules\Inspeccion\Observers;
 use Modules\Inspeccion\Enums\TaskStatus;
 use Modules\Inspeccion\Models\Tarea;
 use Modules\Inspeccion\Models\TransicionEstadoPermitida;
+use Modules\Inspeccion\Services\CalculadorAvanceTablero;
 use Modules\Inspeccion\Services\TransicionEstadoGuard;
 
 class TareaObserver
 {
-    public function __construct(private readonly TransicionEstadoGuard $guard) {}
+    public function __construct(
+        private readonly TransicionEstadoGuard $guard,
+        private readonly CalculadorAvanceTablero $calculador,
+    ) {}
 
     public function saving(Tarea $tarea): void
     {
@@ -27,5 +31,15 @@ class TareaObserver
             $original?->value,
             $tarea->status->value,
         );
+    }
+
+    public function saved(Tarea $tarea): void
+    {
+        $this->calculador->recalcularYGuardar($tarea->actividad->tablero);
+    }
+
+    public function deleted(Tarea $tarea): void
+    {
+        $this->calculador->recalcularYGuardar($tarea->actividad->tablero);
     }
 }
