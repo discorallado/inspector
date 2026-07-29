@@ -13,7 +13,8 @@ class GrupoHitoForm
         return $schema->components([
             TextInput::make('nombre')
                 ->label(__('inspeccion.catalogos.campos.nombre'))
-                ->required(),
+                ->required()
+                ->unique(ignoreRecord: true),
             TextInput::make('orden')
                 ->label(__('inspeccion.catalogos.campos.orden'))
                 ->required()

@@ -10,10 +10,11 @@
 2026-07-29
 
 ## Módulo / feature en curso
-**PR4 del ADR 0009 implementado** (modelo de datos `Actividad`/`Tarea`/
-`TareaLink` + guard generalizado, ADR 0010) — próximo paso: `/revisor`
-sobre este diff, después `/ingeniero` en PR5 (migración de los 234
-hitos). Ver detalle completo más abajo.
+**PR4 y PR5 del ADR 0009 implementados** (modelo de datos `Actividad`/
+`Tarea`/`TareaLink` + guard generalizado, ADR 0010; comando de migración
+de los 234 hitos existentes, ADR 0011) — próximo paso: `/revisor` sobre
+el diff de PR5, después `/ingeniero` en PR6 (`ActividadesRelationManager`
++ `CalculadorAvanceTablero` adaptado). Ver detalle completo más abajo.
 
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
 seguimiento en terreno. **El usuario pidió revertir el kanban de
@@ -23,7 +24,36 @@ seguimiento de hitos/tareas de `Tablero`, diferido hasta definir la
 integración con `axon` (ver abajo, sección grande nueva). PR3 (theme
 custom, ADR 0007) sigue vigente sin cambios.
 
-## Estado actual (2026-07-29) — PR4: modelo de datos Actividad/Tarea (ADR 0010)
+## Estado actual (2026-07-29) — PR5: comando de migración de datos (ADR 0011)
+
+Sesión de `/ingeniero`, continuación directa de PR4. Dos decisiones que
+el ADR 0009 §2.5 no cerró, presentadas al usuario antes de implementar:
+`EstadoAvance.codigo = 'na'` (usado en datos reales, ej. item `2.4`) no
+tiene equivalente directo en `TaskStatus` (5 casos, ninguno "N/A") —
+mapeado a `Bloqueada` (semántica más cercana, se pierde el matiz
+"excluido del cálculo" hasta que `CalculadorAvanceTablero` en PR6 lo
+resuelva); y `Tarea.code` se genera como `"{tablero.tag}-{hito.item}"`
+(único en la práctica para los 234 hitos reales, sin agregar un
+`unique()` de BD — ese gap señalado por `/qa` sigue como decisión
+aparte).
+
+- **`MigrarHitosATareasCommand`** (`inspeccion:migrar-hitos-a-tareas`):
+  agrupa `TableroHito` por `GrupoHito` → una `Actividad` por grupo usado
+  en el `Tablero`; cada `TableroHito` → una `Tarea`, preservando `peso`/
+  `real_inicio`/`real_fin`. `Tarea::withoutEvents()` al crear (carga
+  histórica, no transición de usuario — mismo criterio que
+  `SeguimientoIntegracionTablerosSeeder` ya usa para `TableroHito`), todo
+  en una `DB::transaction()`. **Idempotente** vía `updateOrCreate()` con
+  clave natural — correrlo dos veces no duplica nada.
+- Corrido contra los 234 hitos reales: 48 `Actividad` + 234 `Tarea`
+  creadas la primera vez, 0 creadas / 234 actualizadas la segunda.
+  `TableroHito`/`GrupoHito`/`EstadoAvance` quedan intactos (deprecados,
+  no borrados, hasta PR9).
+- 6 tests nuevos. Suite completa: **113 passed, 1 risky preexistente**
+  (sin fallas), Pint limpio. Detalle completo en
+  [ADR 0011](Modules/Inspeccion/docs/adr/0011-pr5-migracion-datos-hitos-a-tareas.md).
+
+## Estado histórico (2026-07-29) — PR4: modelo de datos Actividad/Tarea (ADR 0010)
 
 Sesión de `/ingeniero`. Hallazgo importante antes de escribir código: la
 sesión anterior asumió `axon` en `/home/ubuntu/axon` (no existe en este
@@ -425,22 +455,26 @@ viejos. Detalle completo en el comentario de la clase
 (`Modules/Inspeccion/app/Services/TransicionEstadoGuard.php`).
 
 ## Próximo paso concreto
-`/revisor` de PR4 ya corrió (2 hallazgos reales corregidos, ver arriba) —
-pendiente, no bloqueante: abrir su PR en GitHub (mismo trámite
-retroactivo que PR3/ADR 0008). `/ingeniero` — **PR5 del ADR 0009**:
-comando de migración de datos (234 hitos existentes → `Actividad`/
-`Tarea`). Ver
+`/revisor` sobre el diff de PR5 (comando de migración, ADR 0011) —
+todavía no corrió. Después, `/ingeniero` — **PR6 del ADR 0009**:
+`ActividadesRelationManager` (reemplaza `TableroHitosRelationManager`) +
+`CalculadorAvanceTablero` adaptado a sumar sobre `Tarea.peso` (ahí se
+resuelve el matiz "excluido del cálculo" para `Bloqueada`/`na` que quedó
+pendiente en PR5, ver ADR 0011 §2). Ver
 [`0009-integracion-actividad-tarea-desde-axon.md`](Modules/Inspeccion/docs/adr/0009-integracion-actividad-tarea-desde-axon.md)
-§8 para el plan completo (PR4-PR9) y
+§8 para el plan completo (PR4-PR9),
 [`0010-pr4-actividad-tarea-modelo-de-datos.md`](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md)
-para el detalle de lo implementado en PR4. La autonumeración de catálogos del
+y
+[`0011-pr5-migracion-datos-hitos-a-tareas.md`](Modules/Inspeccion/docs/adr/0011-pr5-migracion-datos-hitos-a-tareas.md)
+para el detalle de lo implementado. La autonumeración de catálogos del
 ADR 0006 (los 9 simples, sin `TableroHito.item` que quedó cancelado)
 sigue pendiente pero sin relación con esto — se puede retomar en
 cualquier momento, no depende de PR4-PR9.
 
-Pendiente, no bloqueante: correr `/revisor` sobre PR3 (theme, ADR 0007) y
-el PR de reversión kanban→tabla (ADR 0008) antes de abrir sus PR en
-GitHub.
+Pendiente, no bloqueante: abrir PR en GitHub para PR4 (mismo trámite
+retroactivo que PR3/ADR 0008, [#3](https://github.com/discorallado/inspector/pull/3)
+y [#4](https://github.com/discorallado/inspector/pull/4)) y para PR5
+cuando pase por `/revisor`.
 
 ---
 

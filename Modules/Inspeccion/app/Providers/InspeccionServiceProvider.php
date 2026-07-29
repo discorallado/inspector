@@ -5,6 +5,7 @@ namespace Modules\Inspeccion\Providers;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Gate;
+use Modules\Inspeccion\Console\Commands\MigrarHitosATareasCommand;
 use Modules\Inspeccion\Models\ChecklistEjecucion;
 use Modules\Inspeccion\Models\ChecklistEjecucionItem;
 use Modules\Inspeccion\Models\ChecklistItemLibrary;
@@ -58,7 +59,9 @@ class InspeccionServiceProvider extends ModuleServiceProvider
      *
      * @var string[]
      */
-    // protected array $commands = [];
+    protected array $commands = [
+        MigrarHitosATareasCommand::class,
+    ];
 
     /**
      * Provider classes to register.
