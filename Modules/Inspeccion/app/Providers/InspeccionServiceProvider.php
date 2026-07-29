@@ -5,6 +5,7 @@ namespace Modules\Inspeccion\Providers;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Gate;
+use Modules\Inspeccion\Console\Commands\MigrarHitosATareasCommand;
 use Modules\Inspeccion\Models\ChecklistEjecucion;
 use Modules\Inspeccion\Models\ChecklistEjecucionItem;
 use Modules\Inspeccion\Models\ChecklistItemLibrary;
@@ -21,12 +22,14 @@ use Modules\Inspeccion\Models\ResultadoChecklist;
 use Modules\Inspeccion\Models\Severidad;
 use Modules\Inspeccion\Models\Tablero;
 use Modules\Inspeccion\Models\TableroHito;
+use Modules\Inspeccion\Models\Tarea;
 use Modules\Inspeccion\Models\TipoObservacion;
 use Modules\Inspeccion\Models\TransicionEstadoPermitida;
 use Modules\Inspeccion\Models\VisitaInspeccion;
 use Modules\Inspeccion\Observers\ControlCambioObserver;
 use Modules\Inspeccion\Observers\ObservacionObserver;
 use Modules\Inspeccion\Observers\TableroHitoObserver;
+use Modules\Inspeccion\Observers\TareaObserver;
 use Modules\Inspeccion\Policies\CatalogoPolicy;
 use Modules\Inspeccion\Policies\ChecklistEjecucionItemPolicy;
 use Modules\Inspeccion\Policies\ChecklistEjecucionPolicy;
@@ -56,7 +59,9 @@ class InspeccionServiceProvider extends ModuleServiceProvider
      *
      * @var string[]
      */
-    // protected array $commands = [];
+    protected array $commands = [
+        MigrarHitosATareasCommand::class,
+    ];
 
     /**
      * Provider classes to register.
@@ -129,6 +134,7 @@ class InspeccionServiceProvider extends ModuleServiceProvider
         TableroHito::observe(TableroHitoObserver::class);
         Observacion::observe(ObservacionObserver::class);
         ControlCambio::observe(ControlCambioObserver::class);
+        Tarea::observe(TareaObserver::class);
     }
 
     /**

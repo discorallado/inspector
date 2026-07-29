@@ -81,17 +81,32 @@ class ControlCambiosTable
         $origenCodigo = $record->estadoCambio->codigo;
 
         $idsAlcanzables = app(TransicionEstadoGuard::class)
-            ->transicionesValidasDesde(TransicionEstadoPermitida::TIPO_ESTADO_CAMBIO, $record->estado_cambio_id);
-
-        $idsAutorizados = EstadoCambio::query()
-            ->whereIn('id', $idsAlcanzables)
-            ->get()
-            ->filter(fn (EstadoCambio $estado) => Gate::allows(self::abilityRequerida($origenCodigo, $estado->codigo)))
-            ->pluck('id')
+            ->transicionesValidasDesde(TransicionEstadoPermitida::TIPO_ESTADO_CAMBIO, $record->estado_cambio_id)
             ->push($record->estado_cambio_id)
             ->unique();
 
-        return EstadoCambio::query()->whereIn('id', $idsAutorizados)->orderBy('orden')->pluck('nombre', 'id')->all();
+        return EstadoCambio::query()
+            ->whereIn('id', $idsAlcanzables)
+            ->orderBy('orden')
+            ->get()
+            ->filter(fn (EstadoCambio $estado) => $estado->id === $record->estado_cambio_id
+                || Gate::allows(self::abilityRequerida($origenCodigo, $estado->codigo)))
+            ->pluck('nombre', 'id')
+            ->all();
+    }
+
+    /**
+     * Misma matriz de abilities que ControlCambioActions: aprobar/rechazar
+     * (desde propuesto o aprobado) exigen `decidir`; implementar (desde
+     * aprobado) y desimplementar (desde implementado) exigen `implementar`.
+     */
+    private static function abilityRequerida(string $origenCodigo, string $destinoCodigo): string
+    {
+        return match (true) {
+            $origenCodigo === 'aprobado' && $destinoCodigo === 'implementado' => 'control_cambio.implementar',
+            $origenCodigo === 'implementado' && $destinoCodigo === 'aprobado' => 'control_cambio.implementar',
+            default => 'control_cambio.decidir',
+        };
     }
 
     /**

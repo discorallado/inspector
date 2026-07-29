@@ -1,9 +1,22 @@
 # 0002 — Módulo de Seguimiento de Fabricación e Inspección de Tableros Eléctricos
 
-> Estado: propuesto. Este documento describe el modelo de datos y la lógica de
-> negocio de una herramienta que hoy vive en 3 planillas Excel separadas, para
-> que se diseñe e implemente sobre la base técnica del PMIS (sección 3 de
-> CLAUDE.md). Es el insumo para `/arquitecto`.
+> Estado: implementado, con una excepción (ver nota). Este documento describe
+> el modelo de datos y la lógica de negocio original de una herramienta que
+> vivía en 3 planillas Excel separadas — fue el insumo para `/arquitecto` y
+> sigue siendo la referencia de negocio para Observaciones, Control de
+> Cambios y Checklist (§3.3-3.7), implementados tal cual acá.
+
+> **Nota de superación parcial (2026-07-29)**: el seguimiento de avance
+> ponderado de §3.2/§4 (`TableroHito`/`grupo` como string/FK) fue
+> reemplazado por el modelo `Actividad`/`Tarea` portado desde `axon`, para
+> reutilizar su Kanban/Gantt en vez de construir uno propio — ver
+> [ADR 0009](adr/0009-integracion-actividad-tarea-desde-axon.md),
+> [0010](adr/0010-pr4-actividad-tarea-modelo-de-datos.md) y
+> [0011](adr/0011-pr5-migracion-datos-hitos-a-tareas.md). `TableroHito`/
+> `GrupoHito`/`estado_avance` (§3.2, §3.6) quedan deprecados, no borrados,
+> hasta el cleanup de PR9 — la fórmula de avance ponderado de §4 sigue
+> vigente en espíritu, PR6 la adapta para sumar sobre `Tarea.peso` en vez
+> de `TableroHito.peso`.
 
 ## 1. Alcance
 
