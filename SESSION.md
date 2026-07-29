@@ -67,8 +67,19 @@ memoria.
   inventar un discriminador ahora sin uso sería diseñar a ciegas).
   Policies/abilities de la matriz de permisos del ADR 0009 §4: no hay
   recurso Filament todavía que las invoque, llegan en PR6.
-- 15 tests nuevos (guard *PorCodigo, modelos/relaciones, `TareaObserver`).
-  Suite completa: **98 passed, 1 risky preexistente** (sin fallas), Pint
+- **`/revisor` corrido sobre el diff, 2 hallazgos reales corregidos**:
+  (1) el `down()` de la migración de columnas de código no era
+  reversible en la práctica una vez que el seeder corría (`ALTER` a
+  `NOT NULL` rechazado por las 8 filas `tarea_status` con
+  `estado_destino_id NULL`) — confirmado con rollback real contra
+  MariaDB después de sembrar datos, corregido borrando esas filas antes
+  del `ALTER`; (2) `actividades`/`tareas` tenían `cascadeOnDelete()` sin
+  `SoftDeletes` (igual que `tablero_hitos`, pero sin la protección que sí
+  tiene el historial de calidad) — corregido con `SoftDeletes` +
+  `restrictOnDelete()`, mismo patrón que `Observacion`/`ControlCambio`.
+- 20 tests (guard *PorCodigo, modelos/relaciones, `TareaObserver`,
+  rollback de migración, borrado lógico/`restrictOnDelete`). Suite
+  completa: **103 passed, 1 risky preexistente** (sin fallas), Pint
   limpio. Detalle completo en
   [ADR 0010](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md).
 
@@ -414,11 +425,11 @@ viejos. Detalle completo en el comentario de la clase
 (`Modules/Inspeccion/app/Services/TransicionEstadoGuard.php`).
 
 ## Próximo paso concreto
-`/revisor` sobre el diff de PR4 (modelo de datos `Actividad`/`Tarea`/
-`TareaLink` + guard generalizado, ADR 0010) antes de abrir su PR en
-GitHub (mismo trámite retroactivo que PR3/ADR 0008). Después, `/ingeniero`
-— **PR5 del ADR 0009**: comando de migración de datos (234 hitos
-existentes → `Actividad`/`Tarea`). Ver
+`/revisor` de PR4 ya corrió (2 hallazgos reales corregidos, ver arriba) —
+pendiente, no bloqueante: abrir su PR en GitHub (mismo trámite
+retroactivo que PR3/ADR 0008). `/ingeniero` — **PR5 del ADR 0009**:
+comando de migración de datos (234 hitos existentes → `Actividad`/
+`Tarea`). Ver
 [`0009-integracion-actividad-tarea-desde-axon.md`](Modules/Inspeccion/docs/adr/0009-integracion-actividad-tarea-desde-axon.md)
 §8 para el plan completo (PR4-PR9) y
 [`0010-pr4-actividad-tarea-modelo-de-datos.md`](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md)

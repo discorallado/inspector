@@ -40,11 +40,10 @@ una recomendación explícita antes de sembrarla (no estaba en el ADR 0009).
   consistencia con el resto de Inspeccion (ningún modelo del módulo usa
   ULID) sobre cero-fricción en una integración a axon que todavía no
   tiene fecha; el rename de PK en ese momento es mecánico.
-- `actividades.tablero_id` con `cascadeOnDelete()`, igual que
-  `tablero_hitos.tablero_id` (la entidad que reemplaza) — **no**
-  `restrictOnDelete()` como `Observacion`/`ControlCambio`/etc., que
-  protegen historial de auditoría de calidad; `Actividad`/`Tarea` son
-  planificación de avance, mismo tipo de dato que `TableroHito` ya era.
+- `actividades.tablero_id`/`tareas.actividad_id` con `restrictOnDelete()`
+  + `SoftDeletes` en ambos modelos (ver §2.6 — corregido en `/revisor`,
+  la primera versión de este PR usaba `cascadeOnDelete()` sin
+  `SoftDeletes`, igual que `tablero_hitos`).
 - Validado contra MariaDB real (ddev): `migrate` y `migrate:rollback -
   -step=4` completos, incluyendo el `->change()` de `estado_destino_id`
   (Laravel 13 no necesita `doctrine/dbal` para esto).
@@ -105,14 +104,45 @@ Mismo patrón que `ObservacionObserver`/`ControlCambioObserver`: valida en
 - `getStatusAttribute()`/`completionPercentage()` de `Activity` (axon):
   es lógica de `CalculadorAvanceTablero` adaptado, PR6.
 
+### 2.6 Correcciones de `/revisor` (dos rondas)
+
+**Ronda 1 — `down()` no reversible en la práctica.** La migración que
+agrega las columnas de código dropeaba `estado_origen_codigo`/
+`estado_destino_codigo` y volvía `estado_destino_id` a `NOT NULL` en su
+`down()`, pero `TransicionEstadoPermitidaSeeder` (mismo PR) siembra 8
+filas `tipo_catalogo='tarea_status'` con `estado_destino_id NULL` (son
+basadas en código). El `ALTER` a `NOT NULL` las rechazaba en cuanto el
+seeder hubiera corrido — la validación manual original probó
+`migrate`/`migrate:rollback` sin sembrar datos de por medio, así que no
+lo detectó. Fix: `down()` borra las filas con `estado_destino_id NULL`
+antes del `ALTER` (solo existen porque este mismo `up()` habilitó las
+columnas de código). Confirmado con `migrate:rollback` real contra
+MariaDB después de `module:seed Inspeccion`.
+
+**Ronda 2 — `cascadeOnDelete()` sin `SoftDeletes`.** `actividades`/
+`tareas` quedaron con `cascadeOnDelete()` igual que `tablero_hitos` (la
+entidad que reemplazan), pero a diferencia de `tablero_hitos` van a
+acumular trabajo real del usuario (subtareas, horas, Kanban/Gantt en
+PR7/PR8) — mismo riesgo de cascada física que ya se había corregido para
+el historial de calidad (`Observacion`/`ControlCambio`/etc., ver ADR
+previo de esa sesión). Fix: `SoftDeletes` en ambos modelos +
+`restrictOnDelete()` en `actividades.tablero_id` y `tareas.actividad_id`
+(mismo patrón, migración separada que no edita las 3 ya corridas de este
+PR). `tareas.parent_tarea_id` se deja `nullOnDelete()` sin cambios — es
+un caso distinto (una subtarea huérfana no es pérdida de historial).
+
 ## 3. Verificación
 
-- Migraciones: `migrate` + `migrate:rollback --step=4` contra MariaDB
-  real (ddev), no solo SQLite en memoria.
-- 15 tests nuevos: guard *PorCodigo (6, unit), modelos/relaciones (4),
+- Migraciones: `migrate` + `migrate:rollback --step=4` (y `--step=1` para
+  la migración de `/revisor`) contra MariaDB real (ddev), no solo SQLite
+  en memoria. El rollback de las columnas de código se probó **con
+  datos ya sembrados** (`module:seed Inspeccion`), no solo con la tabla
+  vacía.
+- 20 tests: guard *PorCodigo (6, unit), modelos/relaciones (4),
   `TareaObserver` (6 — incluye rechazo de salto directo y de reapertura
-  de Completada). Suite completa: **98 passed, 1 risky preexistente**
-  (sin fallas), Pint limpio.
+  de Completada), rollback de la migración de códigos (1), borrado
+  lógico/`restrictOnDelete` (4). Suite completa: **103 passed, 1 risky
+  preexistente** (sin fallas), Pint limpio.
 
 ## 4. Alternativas descartadas
 
