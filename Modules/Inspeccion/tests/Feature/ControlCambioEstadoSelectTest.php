@@ -110,3 +110,17 @@ it('supervisor (decidir, sin implementar) no puede mountear Desimplementar', fun
         ->mountTableAction('desimplementar', $cambio)
         ->assertTableActionNotMounted('desimplementar');
 });
+
+it('supervisor (decidir, sin implementar) NO puede revertir Implementado -> Aprobado desde el select (hallazgo /revisor)', function () {
+    $user = User::factory()->create(['role' => 'supervisor']);
+    $cambio = ControlCambio::withoutEvents(fn () => ControlCambio::factory()->for($this->tablero)->create([
+        'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'implementado')->value('id'),
+    ]));
+    $aprobado = EstadoCambio::query()->where('codigo', 'aprobado')->value('id');
+
+    $this->actingAs($user);
+    Livewire::test(ListControlCambios::class)
+        ->call('updateTableColumnState', 'estado_cambio_id', $cambio->getKey(), $aprobado);
+
+    expect($cambio->refresh()->estado_cambio_id)->not->toBe($aprobado);
+});
