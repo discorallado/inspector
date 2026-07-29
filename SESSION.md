@@ -10,11 +10,17 @@
 2026-07-29
 
 ## Módulo / feature en curso
-**PR4 y PR5 del ADR 0009 implementados** (modelo de datos `Actividad`/
-`Tarea`/`TareaLink` + guard generalizado, ADR 0010; comando de migración
-de los 234 hitos existentes, ADR 0011) — próximo paso: `/revisor` sobre
-el diff de PR5, después `/ingeniero` en PR6 (`ActividadesRelationManager`
-+ `CalculadorAvanceTablero` adaptado). Ver detalle completo más abajo.
+**PR4 y PR5 del ADR 0009 implementados, revisados y con QA** (modelo de
+datos `Actividad`/`Tarea`/`TareaLink` + guard generalizado, ADR 0010;
+comando de migración de los 234 hitos existentes, ADR 0011). PRs
+retroactivos de registro abiertos en GitHub:
+[#5](https://github.com/discorallado/inspector/pull/5) (PR4),
+[#6](https://github.com/discorallado/inspector/pull/6) (PR5) — igual que
+[#3](https://github.com/discorallado/inspector/pull/3)/[#4](https://github.com/discorallado/inspector/pull/4)
+para PR3/ADR 0008, no se mergean contra `main` (ya está ahí), son solo
+para que GitHub muestre el diff real con el detalle de revisión.
+Próximo paso: `/ingeniero` en PR6 (`ActividadesRelationManager` +
+`CalculadorAvanceTablero` adaptado). Ver detalle completo más abajo.
 
 Rediseño UX de `Inspeccion`: de CRUD administrativo a herramienta de
 seguimiento en terreno. **El usuario pidió revertir el kanban de
@@ -24,7 +30,39 @@ seguimiento de hitos/tareas de `Tablero`, diferido hasta definir la
 integración con `axon` (ver abajo, sección grande nueva). PR3 (theme
 custom, ADR 0007) sigue vigente sin cambios.
 
-## Estado actual (2026-07-29) — PR5: comando de migración de datos (ADR 0011)
+## Estado actual (2026-07-29) — Retroactivos PR4/PR5 en GitHub + /qa del gap de idempotencia
+
+El usuario pidió retomar los pendientes de PR4/PR5 con `/revisor`, aplicar
+`/qa`, y seguir con los PRs siguientes repitiendo el ciclo — se ejecutó la
+parte de registro/QA; PR6-PR9 quedan para la próxima sesión (ver "Próximo
+paso concreto").
+
+- **PRs retroactivos abiertos**: [#5](https://github.com/discorallado/inspector/pull/5)
+  (PR4: rango `f9b0644..421dd02`, incluye el feat + las 2 correcciones de
+  `/revisor` + el commit de `/qa`) y [#6](https://github.com/discorallado/inspector/pull/6)
+  (PR5: rango `421dd02..3d6bd80`, feat + las 2 correcciones de `/revisor`).
+  Mismo trámite que PR3/ADR 0008: ramas `archive/*` base+head, no se
+  mergean contra `main`.
+- **`/qa` sobre el estado combinado de PR4+PR5** encontró 1 gap real no
+  documentado antes: `TableroHitosRelationManager` sigue activo y
+  editable (no es de solo lectura todavía) — si alguien edita `item` de
+  un `TableroHito` entre dos corridas de
+  `inspeccion:migrar-hitos-a-tareas`, la clave natural de `Tarea`
+  (`actividad_id`+`code`, con `code` derivado del `item`) no encuentra la
+  `Tarea` vieja y crea una nueva, dejando la anterior huérfana con datos
+  desactualizados. **Documentado con test, no corregido** — la solución
+  correcta (¿matchear por `hito_id` en vez de por `code`? ¿congelar
+  `TableroHito` a solo-lectura ya, antes de PR9?) es una decisión de
+  `/arquitecto`, no algo que QA deba resolver unilateralmente.
+- `docs/0002-seguimiento-inspeccion-tableros.md` (el requerimiento
+  original) actualizado con una nota de superación parcial: el
+  seguimiento de avance ponderado de su §3.2/§4 fue reemplazado por
+  `Actividad`/`Tarea` (ADR 0009-0011) — el resto del documento
+  (Observaciones, Control de Cambios, Checklist) sigue vigente tal cual.
+- Suite completa: **119 passed, 1 risky preexistente** (sin fallas), Pint
+  limpio.
+
+## Estado histórico (2026-07-29) — PR5: comando de migración de datos (ADR 0011)
 
 Sesión de `/ingeniero`, continuación directa de PR4. Dos decisiones que
 el ADR 0009 §2.5 no cerró, presentadas al usuario antes de implementar:
@@ -455,12 +493,17 @@ viejos. Detalle completo en el comentario de la clase
 (`Modules/Inspeccion/app/Services/TransicionEstadoGuard.php`).
 
 ## Próximo paso concreto
-`/revisor` sobre el diff de PR5 (comando de migración, ADR 0011) —
-todavía no corrió. Después, `/ingeniero` — **PR6 del ADR 0009**:
-`ActividadesRelationManager` (reemplaza `TableroHitosRelationManager`) +
-`CalculadorAvanceTablero` adaptado a sumar sobre `Tarea.peso` (ahí se
-resuelve el matiz "excluido del cálculo" para `Bloqueada`/`na` que quedó
-pendiente en PR5, ver ADR 0011 §2). Ver
+`/ingeniero` — **PR6 del ADR 0009**: `ActividadesRelationManager`
+(reemplaza `TableroHitosRelationManager`) + `CalculadorAvanceTablero`
+adaptado a sumar sobre `Tarea.peso` (ahí se resuelve el matiz "excluido
+del cálculo" para `Bloqueada`/`na` que quedó pendiente en PR5, ver ADR
+0011 §2). El usuario pidió repetir el ciclo `/ingeniero` → `/revisor` →
+`/qa` para PR6, PR7 (Kanban), PR8 (Gantt DHTMLX) y PR9 (cleanup) hasta
+completarlos todos — quedan trackeados como tareas pendientes (#12-#15
+en el TaskList de la sesión que los creó). Antes de PR7 (Gantt/Kanban)
+conviene resolver el gap de idempotencia del comando de migración
+señalado arriba (¿`TableroHito` de solo lectura ya?), porque PR9 va a
+depender de que los datos migrados sean confiables. Ver
 [`0009-integracion-actividad-tarea-desde-axon.md`](Modules/Inspeccion/docs/adr/0009-integracion-actividad-tarea-desde-axon.md)
 §8 para el plan completo (PR4-PR9),
 [`0010-pr4-actividad-tarea-modelo-de-datos.md`](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md)
@@ -470,11 +513,6 @@ para el detalle de lo implementado. La autonumeración de catálogos del
 ADR 0006 (los 9 simples, sin `TableroHito.item` que quedó cancelado)
 sigue pendiente pero sin relación con esto — se puede retomar en
 cualquier momento, no depende de PR4-PR9.
-
-Pendiente, no bloqueante: abrir PR en GitHub para PR4 (mismo trámite
-retroactivo que PR3/ADR 0008, [#3](https://github.com/discorallado/inspector/pull/3)
-y [#4](https://github.com/discorallado/inspector/pull/4)) y para PR5
-cuando pase por `/revisor`.
 
 ---
 
