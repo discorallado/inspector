@@ -11,6 +11,7 @@ use Modules\Inspeccion\Models\GrupoHito;
 use Modules\Inspeccion\Models\Tablero;
 use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Models\Tarea;
+use RuntimeException;
 
 /**
  * ADR 0009 §2.5 / ADR 0011: comando de migración de datos, PR5.
@@ -78,7 +79,27 @@ class MigrarHitosATareasCommand extends Command
 
                     $tablero->tableroHitos->each(function (TableroHito $hito) use ($tablero, $actividadesPorGrupo, &$tareasCreadas, &$tareasActualizadas) {
                         $actividad = $actividadesPorGrupo->get($hito->grupo_hito_id);
-                        $status = self::MAPA_ESTADO[$hito->estadoAvance->codigo] ?? TaskStatus::Pendiente;
+                        $codigo = $hito->estadoAvance->codigo;
+
+                        // Sin este throw, un EstadoAvance.codigo no
+                        // reconocido caía silenciosamente en Pendiente —
+                        // codigo es un TextInput libre en el Filament de
+                        // Configuración (sin allowlist), así que renombrar
+                        // 'completado' antes de correr este comando
+                        // migraba hitos ya terminados como si nunca
+                        // hubieran empezado, sin ningún aviso. Mejor fallar
+                        // fuerte (y hacer rollback, ver DB::transaction
+                        // arriba) que corromper el historial de avance en
+                        // silencio.
+                        if (! array_key_exists($codigo, self::MAPA_ESTADO)) {
+                            throw new RuntimeException(
+                                "TableroHito #{$hito->id} (tablero '{$tablero->tag}', item '{$hito->item}') tiene ".
+                                "estado_avance.codigo = '{$codigo}', que no está mapeado a ningún TaskStatus. ".
+                                'Agregalo a MigrarHitosATareasCommand::MAPA_ESTADO antes de re-correr el comando.'
+                            );
+                        }
+
+                        $status = self::MAPA_ESTADO[$codigo];
 
                         $tarea = Tarea::withoutEvents(fn () => Tarea::query()->updateOrCreate(
                             [

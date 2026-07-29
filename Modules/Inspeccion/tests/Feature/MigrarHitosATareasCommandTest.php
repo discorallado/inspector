@@ -125,3 +125,45 @@ it('no borra ni modifica TableroHito/GrupoHito/EstadoAvance (quedan deprecados, 
     expect(GrupoHito::query()->find($this->grupo->id))->not->toBeNull();
     expect(EstadoAvance::query()->count())->toBeGreaterThan(0);
 });
+
+it('falla fuerte (no migra a Pendiente en silencio) si un EstadoAvance.codigo no está mapeado', function () {
+    // codigo es un TextInput libre en el Filament de Configuración, sin
+    // allowlist — un super_admin puede renombrarlo. Antes del fix, un
+    // hito ya 'completado' renombrado a un codigo desconocido se migraba
+    // como Pendiente sin ningún aviso (hallazgo de /revisor sobre PR5).
+    $estadoRenombrado = EstadoAvance::query()->where('codigo', 'completado')->first();
+    $estadoRenombrado->update(['codigo' => 'finalizado']);
+
+    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+        'estado_avance_id' => $estadoRenombrado->id,
+        'item' => '1.1',
+    ]));
+
+    Artisan::call('inspeccion:migrar-hitos-a-tareas');
+})->throws(RuntimeException::class, "codigo = 'finalizado'");
+
+it('no deja Actividades a medio crear si el comando falla a mitad de camino (rollback)', function () {
+    $estadoRenombrado = EstadoAvance::query()->where('codigo', 'completado')->first();
+    $estadoRenombrado->update(['codigo' => 'finalizado']);
+
+    // Un hito válido primero (crearía su Actividad), uno inválido después
+    // en el mismo Tablero — si el rollback no funcionara, quedaría una
+    // Actividad huérfana de una migración que "falló".
+    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+        'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
+        'item' => '1.1',
+    ]));
+    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+        'estado_avance_id' => $estadoRenombrado->id,
+        'item' => '1.2',
+    ]));
+
+    try {
+        Artisan::call('inspeccion:migrar-hitos-a-tareas');
+    } catch (RuntimeException) {
+        // esperado
+    }
+
+    expect(Actividad::query()->count())->toBe(0);
+    expect(Tarea::query()->count())->toBe(0);
+});
