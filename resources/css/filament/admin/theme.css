@@ -34,19 +34,20 @@
  * warning). Selectores planos (comma-separated) en su lugar.
  */
 /*
- * Sidebar "flotante": separada del borde y del contenido con margen,
- * esquinas redondeadas y sombra propia — en vez de pegada edge-to-edge
- * como el default de Filament. Usa margin (no top/bottom/start
- * individuales) porque el sidebar cambia de position:fixed (mobile) a
- * position:sticky (desktop, lg:sticky) y margin es el único offset que
- * se comporta igual en ambos casos; el gap revela el fondo de .fi-body
- * (bg-gray-50 claro / dark:bg-gray-950 oscuro) alrededor. El toggle
- * claro/oscuro no se toca acá, sigue siendo el default de Filament.
+ * Sidebar pegada al borde izquierdo (ms-0), separada solo de arriba,
+ * abajo y del contenido (mt/mb/me) — no del borde de la ventana. Esquinas
+ * redondeadas solo del lado que da al contenido (rounded-e-*, no
+ * rounded-s-*), para que el lado izquierdo quede a escuadra contra el
+ * borde. Usa margin (no top/bottom/start individuales) porque el sidebar
+ * cambia de position:fixed (mobile) a position:sticky (desktop,
+ * lg:sticky) y margin es el único offset que se comporta igual en ambos
+ * casos. El toggle claro/oscuro no se toca, sigue siendo el default de
+ * Filament.
  */
 @layer components {
     .fi-sidebar,
     #fi-main-sidebar {
-        @apply m-3! h-[calc(100dvh-1.5rem)]! rounded-2xl! shadow-lg! ring-1! ring-gray-950/5! dark:ring-white/10! overflow-hidden!;
+        @apply mt-3! mb-3! me-3! ms-0! h-[calc(100dvh-1.5rem)]! rounded-s-none! rounded-e-2xl! shadow-lg! ring-1! ring-gray-950/5! dark:ring-white/10! overflow-hidden!;
     }
 }
 
