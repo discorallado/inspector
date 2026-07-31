@@ -42,6 +42,18 @@ class ObservacionResource extends Resource
         return __('inspeccion.observacion.plural');
     }
 
+    /**
+     * Cuenta las pendientes, no el total — es la cifra que le importa a
+     * un control de calidad revisando el menú (mismo criterio que
+     * ControlCambioResource::getNavigationBadge()).
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) Observacion::query()
+            ->whereHas('estadoObservacion', fn ($query) => $query->where('codigo', 'pendiente'))
+            ->count();
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ObservacionForm::configure($schema);

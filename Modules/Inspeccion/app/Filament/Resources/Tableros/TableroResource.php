@@ -38,6 +38,11 @@ class TableroResource extends Resource
         return __('inspeccion.tablero.plural');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::count();
+    }
+
     public static function form(Schema $schema): Schema
     {
         return TableroForm::configure($schema);

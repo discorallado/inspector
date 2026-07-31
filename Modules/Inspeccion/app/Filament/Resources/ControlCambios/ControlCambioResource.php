@@ -34,6 +34,16 @@ class ControlCambioResource extends Resource
         return __('inspeccion.control_cambio.plural');
     }
 
+    /**
+     * Cuenta los propuestos (pendientes de decisión), no el total.
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) ControlCambio::query()
+            ->whereHas('estadoCambio', fn ($query) => $query->where('codigo', 'propuesto'))
+            ->count();
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ControlCambioForm::configure($schema);
