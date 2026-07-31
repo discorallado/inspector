@@ -21,59 +21,29 @@
  * en las vistas custom del módulo lo hereda automáticamente. No se
  * define acá un sistema de tokens paralelo.
  *
- * Sidebar siempre oscura (referencia visual pedida por el usuario):
- * overrides puntuales sobre las clases de Filament (.fi-sidebar,
- * .fi-sidebar-item, etc.) vía @apply — solo utilidades Tailwind, nada de
- * CSS a mano. Sin verificación visual en este entorno (sin browser/
- * screenshot disponible) — primera pasada a revisar en el navegador.
+ * Sidebar: sigue el toggle claro/oscuro default de Filament (blanca en
+ * claro, gray-900 en oscuro) — el usuario probó la sidebar-siempre-oscura
+ * (calcada de la referencia visual) y pidió volver al comportamiento
+ * estándar, solo con el acento del ítem activo customizado. Overrides
+ * vía @apply sobre las clases reales de Filament, nada de CSS a mano.
  *
  * Nota: evitar el anidamiento `&' dentro de @apply en @layer components
  * acá — combinado con Tailwind 4 + Lightning CSS, un bloque anidado
  * (selector { @apply ...; & > .x { @apply ...; } }) hace que TODO el
  * @layer components se descarte en silencio del build (sin error, sin
  * warning). Selectores planos (comma-separated) en su lugar.
- *
- * También se incluye #fi-main-sidebar (el id real del contenedor,
- * confirmado inspeccionando el DOM) junto a .fi-sidebar — verificado que
- * sin el id el navegador no aplicaba el override (visto en vivo con un
- * marcador de prueba fucsia antes de esta versión final).
  */
 @layer components {
-    .fi-sidebar,
-    #fi-main-sidebar,
-    .fi-sidebar-header,
-    .fi-body-has-topbar .fi-sidebar-header {
-        @apply bg-gray-950!;
-    }
-
-    .fi-sidebar-group-label,
-    .fi-sidebar-item-label,
-    .fi-sidebar-database-notifications-btn-label {
-        @apply text-gray-300!;
-    }
-
-    .fi-sidebar-group-btn .fi-icon,
-    .fi-sidebar-item-btn > .fi-icon,
-    .fi-sidebar-database-notifications-btn > .fi-icon {
-        @apply text-gray-500!;
-    }
-
     .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-        @apply bg-primary-500/10! border-s-2! border-primary-400! ps-3.5!;
+        @apply bg-primary-500/10! border-s-2! border-primary-600! dark:border-primary-400! ps-3.5!;
     }
 
     .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
     .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
-        @apply text-primary-400!;
+        @apply text-primary-700! dark:text-primary-400!;
     }
 
     .fi-sidebar-item.fi-active .fi-badge {
-        @apply bg-primary-500/10! text-primary-400! ring-primary-400/30!;
-    }
-
-    .fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
-    .fi-sidebar-group-dropdown-trigger-btn:hover,
-    .fi-sidebar-database-notifications-btn:hover {
-        @apply bg-white/5!;
+        @apply bg-primary-500/10! text-primary-700! dark:text-primary-400! ring-primary-600/20! dark:ring-primary-400/30!;
     }
 }
