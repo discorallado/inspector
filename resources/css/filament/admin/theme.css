@@ -36,11 +36,30 @@
 /*
  * Sidebar: sin margen, de top a bottom, sticky — el default real de
  * Filament (se probaron 2 variantes "flotantes" con margen y el usuario
- * las descartó, ver historial de commits). La separación visual del
- * topbar/contenido ya la trae Filament de fábrica vía
- * `ring-1 ring-gray-950/5 dark:ring-white/10` en .fi-sidebar — no hace
- * falta agregar nada acá.
+ * las descartó, ver historial de commits).
+ *
+ * El topbar de Filament es una barra full-width que se renderiza ANTES
+ * de .fi-layout (sidebar+contenido son hermanos dentro de .fi-layout,
+ * que es flex) — por eso, con topbar activo, Filament empuja la sidebar
+ * hacia abajo con `lg:top-[4rem]` para no superponerla. Acá se invierte:
+ * la sidebar ocupa esa esquina completa (lg:top-0, alto completo, con
+ * z-index mayor al del topbar para quedar arriba en el solape), y el
+ * topbar arranca recién después del ancho de la sidebar
+ * (lg:ms-(--sidebar-width), la misma variable CSS que Filament ya usa
+ * para el ancho real de la sidebar). Solo en desktop (lg:) — en mobile
+ * la sidebar es un overlay off-canvas, no hay nada que absorber.
  */
+@layer components {
+    .fi-sidebar,
+    #fi-main-sidebar {
+        @apply lg:top-0! lg:h-dvh! lg:z-40!;
+    }
+
+    .fi-topbar-ctn {
+        @apply lg:ms-(--sidebar-width)!;
+    }
+}
+
 @layer components {
     .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
         @apply bg-primary-500/10! border-s-2! border-primary-600! dark:border-primary-400! ps-3.5!;
