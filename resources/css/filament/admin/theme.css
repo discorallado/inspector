@@ -58,6 +58,34 @@
     .fi-topbar-ctn {
         @apply lg:ms-(--sidebar-width)!;
     }
+
+    /*
+     * Filament oculta el header de la sidebar (donde vive el logo) en
+     * desktop cuando hay topbar (asume que el logo se muestra ahí en
+     * vez de en la sidebar) — con el topbar corrido a la derecha, eso
+     * dejaba el logo descolgado fuera de la sidebar y un hueco arriba
+     * de esta. Se invierte: el logo vive en la sidebar (como sin
+     * topbar), se oculta el duplicado del topbar.
+     */
+    .fi-body-has-topbar .fi-sidebar-header {
+        @apply lg:flex! lg:bg-transparent! lg:shadow-none! lg:ring-0!;
+    }
+
+    .fi-topbar-start {
+        @apply lg:hidden!;
+    }
+}
+
+/*
+ * Sidebar un poco más oscura que el default de Filament (gray-50 en
+ * claro en vez de blanco puro, gray-950 en oscuro en vez de gray-900) +
+ * línea divisoria de 1px contra el contenido, en ambos modos.
+ */
+@layer components {
+    .fi-sidebar,
+    #fi-main-sidebar {
+        @apply bg-gray-50! dark:bg-gray-950! border-e! border-gray-950/10! dark:border-white/10!;
+    }
 }
 
 @layer components {
