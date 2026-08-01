@@ -34,38 +34,32 @@
  * warning). Selectores planos (comma-separated) en su lugar.
  */
 /*
- * Sidebar: sin margen, de top a bottom, sticky — el default real de
- * Filament (se probaron 2 variantes "flotantes" con margen y el usuario
- * las descartó, ver historial de commits).
+ * Sidebar de top a bottom real: se sobrescribió
+ * resources/views/vendor/filament-panels/components/layout/index.blade.php
+ * para mover el topbar DENTRO de .fi-main-ctn (junto al contenido) en vez
+ * de como hermano completo antes de .fi-layout — ver el comentario en esa
+ * vista para el porqué (con topbar como hermano previo, .fi-sidebar
+ * (position:sticky en desktop) nunca podía arrancar en el top real por
+ * puro CSS, era un problema estructural, no visual).
  *
- * El topbar de Filament es una barra full-width que se renderiza ANTES
- * de .fi-layout (sidebar+contenido son hermanos dentro de .fi-layout,
- * que es flex) — por eso, con topbar activo, Filament empuja la sidebar
- * hacia abajo con `lg:top-[4rem]` para no superponerla. Acá se invierte:
- * la sidebar ocupa esa esquina completa (lg:top-0, alto completo, con
- * z-index mayor al del topbar para quedar arriba en el solape), y el
- * topbar arranca recién después del ancho de la sidebar
- * (lg:ms-(--sidebar-width), la misma variable CSS que Filament ya usa
- * para el ancho real de la sidebar). Solo en desktop (lg:) — en mobile
- * la sidebar es un overlay off-canvas, no hay nada que absorber.
+ * Con esa vista corregida, Filament sigue agregando la clase
+ * fi-body-has-topbar (todavía hay topbar, solo que ahora vive en otro
+ * lugar del DOM) y su CSS de fábrica sigue empujando la sidebar
+ * `lg:top-[4rem]` asumiendo el layout viejo — se anula acá, es lo único
+ * que sigue haciendo falta.
  */
 @layer components {
     .fi-sidebar,
     #fi-main-sidebar {
-        @apply lg:top-0! lg:h-dvh! lg:z-40!;
-    }
-
-    .fi-topbar-ctn {
-        @apply lg:ms-(--sidebar-width)!;
+        @apply lg:top-0! lg:h-dvh!;
     }
 
     /*
-     * Filament oculta el header de la sidebar (donde vive el logo) en
-     * desktop cuando hay topbar (asume que el logo se muestra ahí en
-     * vez de en la sidebar) — con el topbar corrido a la derecha, eso
-     * dejaba el logo descolgado fuera de la sidebar y un hueco arriba
-     * de esta. Se invierte: el logo vive en la sidebar (como sin
-     * topbar), se oculta el duplicado del topbar.
+     * El logo vive en la sidebar (pedido explícito del usuario), no en el
+     * topbar — Filament por default oculta el header de la sidebar
+     * (donde está el logo) en desktop cuando hay topbar, y muestra el
+     * logo ahí en cambio. Se invierte: header de la sidebar visible,
+     * logo del topbar oculto (para no duplicarlo).
      */
     .fi-body-has-topbar .fi-sidebar-header {
         @apply lg:flex! lg:bg-transparent! lg:shadow-none! lg:ring-0!;
