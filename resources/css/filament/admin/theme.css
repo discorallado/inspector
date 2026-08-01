@@ -103,8 +103,16 @@
         @apply lg:relative!;
     }
 
+    /*
+     * z-40, no z-10: .fi-topbar-ctn (el contenedor real del topbar, con
+     * fondo opaco) tiene z-30 de fábrica — con un z-index menor, el
+     * breadcrumb quedaba pintado DETRÁS del topbar, invisible aunque el
+     * HTML lo tuviera (confirmado: estaba en el DOM, tapado). Hallazgo
+     * real del usuario, no encontrado por los tests anteriores porque
+     * solo verificaban presencia en el HTML, no el z-index calculado.
+     */
     .fi-topbar-injected-breadcrumbs {
-        @apply hidden! lg:flex! lg:absolute! lg:top-1/2! lg:z-10! lg:-translate-y-1/2! lg:start-16!;
+        @apply hidden! lg:flex! lg:absolute! lg:top-1/2! lg:z-40! lg:-translate-y-1/2! lg:start-16!;
     }
 
     .fi-topbar-injected-breadcrumbs .fi-breadcrumbs-item-label {
