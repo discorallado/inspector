@@ -11,6 +11,14 @@
     $renderHookScopes = $livewire?->getRenderHookScopes();
     $maxContentWidth ??= (filament()->getMaxContentWidth() ?? Width::SevenExtraLarge);
 
+    // Breadcrumbs reales de la página activa (Page::getBreadcrumbs()) para
+    // inyectarlas en la fila del topbar — $livewire acá es la página, no
+    // el topbar (que es un componente Livewire aparte sin este dato). Ver
+    // el comentario más abajo, junto al topbar, para el porqué.
+    $topbarBreadcrumbs = ($livewire && method_exists($livewire, 'getBreadcrumbs'))
+        ? $livewire->getBreadcrumbs()
+        : [];
+
     if (is_string($maxContentWidth)) {
         $maxContentWidth = Width::tryFrom($maxContentWidth) ?? $maxContentWidth;
     }
@@ -116,7 +124,29 @@
             @if ($hasTopbar)
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::TOPBAR_BEFORE, scopes: $renderHookScopes) }}
 
-                @livewire(filament()->getTopbarLivewireComponent())
+                {{--
+                    Wrapper posicionado (position:relative vía
+                    .fi-topbar-with-breadcrumbs en theme.css) para poder
+                    superponer el breadcrumb de la página sobre la fila del
+                    topbar — el topbar es un @livewire aparte, autocontenido,
+                    no se le puede "pasar" contenido por slot. El breadcrumb
+                    se posiciona absolute encima suyo (solo desktop, lg:),
+                    con los datos reales de $livewire->getBreadcrumbs()
+                    calculados arriba. En mobile no se inyecta (topbar más
+                    angosto, con el botón de hamburguesa ahí mismo) — el
+                    breadcrumb default de la página (dentro de <main>) sigue
+                    viéndose igual que siempre.
+                --}}
+                <div class="fi-topbar-with-breadcrumbs">
+                    @if (filled($topbarBreadcrumbs))
+                        <x-filament::breadcrumbs
+                            :breadcrumbs="$topbarBreadcrumbs"
+                            class="fi-topbar-injected-breadcrumbs"
+                        />
+                    @endif
+
+                    @livewire(filament()->getTopbarLivewireComponent())
+                </div>
 
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::TOPBAR_AFTER, scopes: $renderHookScopes) }}
             @endif

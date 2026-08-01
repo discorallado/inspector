@@ -83,29 +83,36 @@
 }
 
 /*
- * Breadcrumbs pegados visualmente contra el topbar (pedido: "mover los
- * breadcrumbs al topbar, lado izquierdo"). Los genera cada página
- * (Page::getBreadcrumbs()) dentro de .fi-header, adentro de <main> —
- * el topbar es un componente Livewire aparte sin acceso a ese dato, así
- * que no se puede mover de verdad sin compartir estado entre ambos
- * (decisión explícita: no vale el riesgo/fragilidad). En cambio: se le
- * saca casi todo el padding superior al contenedor que envuelve el
- * header de página (que hoy separa el breadcrumb del topbar con 2rem,
- * .fi-page-header-main-ctn tiene py-8 parejo arriba y abajo) y se le da
- * al breadcrumb en sí una tipografía más chica/apagada, para que se lea
- * como parte de la misma barra en vez de una fila de contenido aparte.
+ * Breadcrumbs realmente movidos a la fila del topbar, lado izquierdo
+ * (solo desktop, lg:) — no una aproximación visual. Los genera cada
+ * página (Page::getBreadcrumbs()) y el topbar es un componente Livewire
+ * aparte, autocontenido: no se le puede "pasar" contenido por slot desde
+ * afuera. Se resolvió calculando los breadcrumbs en
+ * layout/index.blade.php (donde $livewire SÍ es la página) y
+ * superponiéndolos con position:absolute sobre un wrapper
+ * position:relative que envuelve al @livewire del topbar — ver ese
+ * archivo para el detalle completo.
+ *
+ * En mobile/tablet (< lg) no se inyecta nada: el topbar es más angosto
+ * (botón de hamburguesa ahí mismo) y el breadcrumb default de la página
+ * sigue viéndose donde siempre. Por eso el default de la página solo se
+ * oculta en desktop (lg:hidden), donde el inyectado lo reemplaza.
  */
 @layer components {
-    .fi-page-header-main-ctn {
-        @apply pt-2!;
+    .fi-topbar-with-breadcrumbs {
+        @apply lg:relative!;
     }
 
-    .fi-breadcrumbs {
-        @apply mb-0! text-xs!;
+    .fi-topbar-injected-breadcrumbs {
+        @apply hidden! lg:flex! lg:absolute! lg:top-1/2! lg:z-10! lg:-translate-y-1/2! lg:start-16!;
     }
 
-    .fi-breadcrumbs-item-label {
+    .fi-topbar-injected-breadcrumbs .fi-breadcrumbs-item-label {
         @apply text-gray-500! dark:text-gray-400!;
+    }
+
+    .fi-page-header-main-ctn .fi-breadcrumbs {
+        @apply lg:hidden!;
     }
 }
 
