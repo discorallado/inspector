@@ -34,23 +34,13 @@
  * warning). Selectores planos (comma-separated) en su lugar.
  */
 /*
- * Sidebar pegada al borde izquierdo (ms-0), separada solo de arriba,
- * abajo y del contenido (mt/mb/me) — no del borde de la ventana. Esquinas
- * redondeadas solo del lado que da al contenido (rounded-e-*, no
- * rounded-s-*), para que el lado izquierdo quede a escuadra contra el
- * borde. Usa margin (no top/bottom/start individuales) porque el sidebar
- * cambia de position:fixed (mobile) a position:sticky (desktop,
- * lg:sticky) y margin es el único offset que se comporta igual en ambos
- * casos. El toggle claro/oscuro no se toca, sigue siendo el default de
- * Filament.
+ * Sidebar: sin margen, de top a bottom, sticky — el default real de
+ * Filament (se probaron 2 variantes "flotantes" con margen y el usuario
+ * las descartó, ver historial de commits). La separación visual del
+ * topbar/contenido ya la trae Filament de fábrica vía
+ * `ring-1 ring-gray-950/5 dark:ring-white/10` en .fi-sidebar — no hace
+ * falta agregar nada acá.
  */
-@layer components {
-    .fi-sidebar,
-    #fi-main-sidebar {
-        @apply mt-3! mb-3! me-3! ms-0! h-[calc(100dvh-1.5rem)]! rounded-s-none! rounded-e-2xl! shadow-lg! ring-1! ring-gray-950/5! dark:ring-white/10! overflow-hidden!;
-    }
-}
-
 @layer components {
     .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
         @apply bg-primary-500/10! border-s-2! border-primary-600! dark:border-primary-400! ps-3.5!;
