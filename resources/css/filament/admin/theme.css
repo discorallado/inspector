@@ -82,6 +82,33 @@
     }
 }
 
+/*
+ * Breadcrumbs pegados visualmente contra el topbar (pedido: "mover los
+ * breadcrumbs al topbar, lado izquierdo"). Los genera cada página
+ * (Page::getBreadcrumbs()) dentro de .fi-header, adentro de <main> —
+ * el topbar es un componente Livewire aparte sin acceso a ese dato, así
+ * que no se puede mover de verdad sin compartir estado entre ambos
+ * (decisión explícita: no vale el riesgo/fragilidad). En cambio: se le
+ * saca casi todo el padding superior al contenedor que envuelve el
+ * header de página (que hoy separa el breadcrumb del topbar con 2rem,
+ * .fi-page-header-main-ctn tiene py-8 parejo arriba y abajo) y se le da
+ * al breadcrumb en sí una tipografía más chica/apagada, para que se lea
+ * como parte de la misma barra en vez de una fila de contenido aparte.
+ */
+@layer components {
+    .fi-page-header-main-ctn {
+        @apply pt-2!;
+    }
+
+    .fi-breadcrumbs {
+        @apply mb-0! text-xs!;
+    }
+
+    .fi-breadcrumbs-item-label {
+        @apply text-gray-500! dark:text-gray-400!;
+    }
+}
+
 @layer components {
     .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
         @apply bg-primary-500/10! border-s-2! border-primary-600! dark:border-primary-400! ps-3.5!;
