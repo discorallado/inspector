@@ -124,6 +124,20 @@
     }
 }
 
+/*
+ * Sub-nav de cluster (ej. Configuración) más chico, agrupado como card
+ * flotante: borde + fondo levemente más claro que el contenido + sticky
+ * (queda a la vista al hacer scroll, no se pierde arriba) — default de
+ * Filament es w-72 y sin fondo/borde propio, se ve "pegado" a la página.
+ * El grupo activo abierto por default va en el fork de
+ * sidebar/group.blade.php, no acá (es lógica Alpine, no CSS).
+ */
+@layer components {
+    .fi-page-sub-navigation-sidebar-ctn {
+        @apply w-60! rounded-xl! border! border-gray-950/10! dark:border-white/10! bg-gray-50! dark:bg-white/5! p-3! sticky! top-20! h-fit!;
+    }
+}
+
 @layer components {
     .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
         @apply bg-primary-500/10! border-s-2! border-primary-600! dark:border-primary-400! ps-3.5!;
