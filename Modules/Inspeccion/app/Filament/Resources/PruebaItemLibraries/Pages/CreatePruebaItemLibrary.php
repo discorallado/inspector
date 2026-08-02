@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Pages;
+namespace Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\ChecklistItemLibraryResource;
+use Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\PruebaItemLibraryResource;
 
-class CreateChecklistItemLibrary extends CreateRecord
+class CreatePruebaItemLibrary extends CreateRecord
 {
-    protected static string $resource = ChecklistItemLibraryResource::class;
+    protected static string $resource = PruebaItemLibraryResource::class;
 }

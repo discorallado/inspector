@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries;
+namespace Modules\Inspeccion\Filament\Resources\PruebaItemLibraries;
 
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -8,18 +8,18 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Modules\Inspeccion\Filament\Concerns\PerteneceAConfiguracion;
-use Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Pages\CreateChecklistItemLibrary;
-use Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Pages\EditChecklistItemLibrary;
-use Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Pages\ListChecklistItemLibraries;
-use Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Schemas\ChecklistItemLibraryForm;
-use Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Tables\ChecklistItemLibrariesTable;
-use Modules\Inspeccion\Models\ChecklistItemLibrary;
+use Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Pages\CreatePruebaItemLibrary;
+use Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Pages\EditPruebaItemLibrary;
+use Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Pages\ListPruebaItemLibraries;
+use Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Schemas\PruebaItemLibraryForm;
+use Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Tables\PruebaItemLibrariesTable;
+use Modules\Inspeccion\Models\PruebaItemLibrary;
 
-class ChecklistItemLibraryResource extends Resource
+class PruebaItemLibraryResource extends Resource
 {
     use PerteneceAConfiguracion;
 
-    protected static ?string $model = ChecklistItemLibrary::class;
+    protected static ?string $model = PruebaItemLibrary::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
@@ -32,22 +32,22 @@ class ChecklistItemLibraryResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('inspeccion.checklist.item_library.singular');
+        return __('inspeccion.prueba.item_library.singular');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('inspeccion.checklist.item_library.plural');
+        return __('inspeccion.prueba.item_library.plural');
     }
 
     public static function form(Schema $schema): Schema
     {
-        return ChecklistItemLibraryForm::configure($schema);
+        return PruebaItemLibraryForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return ChecklistItemLibrariesTable::configure($table);
+        return PruebaItemLibrariesTable::configure($table);
     }
 
     public static function getRelations(): array
@@ -60,9 +60,9 @@ class ChecklistItemLibraryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListChecklistItemLibraries::route('/'),
-            'create' => CreateChecklistItemLibrary::route('/create'),
-            'edit' => EditChecklistItemLibrary::route('/{record}/edit'),
+            'index' => ListPruebaItemLibraries::route('/'),
+            'create' => CreatePruebaItemLibrary::route('/create'),
+            'edit' => EditPruebaItemLibrary::route('/{record}/edit'),
         ];
     }
 }

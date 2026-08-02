@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Tables;
+namespace Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -9,7 +9,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class ChecklistItemLibrariesTable
+class PruebaItemLibrariesTable
 {
     public static function configure(Table $table): Table
     {
@@ -17,14 +17,14 @@ class ChecklistItemLibrariesTable
             ->defaultSort('orden')
             ->columns([
                 TextColumn::make('categoria')
-                    ->label(__('inspeccion.checklist.campos.categoria'))
+                    ->label(__('inspeccion.prueba.campos.categoria'))
                     ->searchable(),
                 TextColumn::make('item')
-                    ->label(__('inspeccion.checklist.campos.item'))
+                    ->label(__('inspeccion.prueba.campos.item'))
                     ->limit(60)
                     ->searchable(),
                 TextColumn::make('referencia_normativa')
-                    ->label(__('inspeccion.checklist.campos.referencia_normativa'))
+                    ->label(__('inspeccion.prueba.campos.referencia_normativa'))
                     ->searchable(),
                 IconColumn::make('activo')
                     ->label(__('inspeccion.catalogos.campos.activo'))

@@ -4,42 +4,42 @@ namespace Modules\Inspeccion\Policies;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
-use Modules\Inspeccion\Models\ChecklistEjecucion;
+use Modules\Inspeccion\Models\Prueba;
 
 // TODO: reemplazar por policy real al integrar a axon.
-class ChecklistEjecucionPolicy
+class PruebaPolicy
 {
     public function viewAny(User $user): bool
     {
         return Gate::allows('tablero.ver');
     }
 
-    public function view(User $user, ChecklistEjecucion $ejecucion): bool
+    public function view(User $user, Prueba $prueba): bool
     {
         return Gate::allows('tablero.ver');
     }
 
     public function create(User $user): bool
     {
-        return Gate::allows('checklist_ejecucion.completar');
+        return Gate::allows('prueba.completar');
     }
 
-    public function update(User $user, ChecklistEjecucion $ejecucion): bool
+    public function update(User $user, Prueba $prueba): bool
     {
-        return Gate::allows('checklist_ejecucion.completar');
+        return Gate::allows('prueba.completar');
     }
 
-    public function delete(User $user, ChecklistEjecucion $ejecucion): bool
+    public function delete(User $user, Prueba $prueba): bool
     {
-        return Gate::allows('checklist_ejecucion.completar');
+        return Gate::allows('prueba.completar');
     }
 
-    public function restore(User $user, ChecklistEjecucion $ejecucion): bool
+    public function restore(User $user, Prueba $prueba): bool
     {
-        return Gate::allows('checklist_ejecucion.completar');
+        return Gate::allows('prueba.completar');
     }
 
-    public function forceDelete(User $user, ChecklistEjecucion $ejecucion): bool
+    public function forceDelete(User $user, Prueba $prueba): bool
     {
         return Gate::allows('auditoria.purgar');
     }
@@ -51,12 +51,12 @@ class ChecklistEjecucionPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return Gate::allows('checklist_ejecucion.completar');
+        return Gate::allows('prueba.completar');
     }
 
     public function restoreAny(User $user): bool
     {
-        return Gate::allows('checklist_ejecucion.completar');
+        return Gate::allows('prueba.completar');
     }
 
     public function forceDeleteAny(User $user): bool

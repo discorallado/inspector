@@ -1,14 +1,14 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Pages;
+namespace Modules\Inspeccion\Filament\Resources\Pruebas\Pages;
 
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
-use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\ChecklistEjecucionResource;
+use Modules\Inspeccion\Filament\Resources\Pruebas\PruebaResource;
 
-class EditChecklistEjecucion extends EditRecord
+class EditPrueba extends EditRecord
 {
-    protected static string $resource = ChecklistEjecucionResource::class;
+    protected static string $resource = PruebaResource::class;
 
     protected function getHeaderActions(): array
     {

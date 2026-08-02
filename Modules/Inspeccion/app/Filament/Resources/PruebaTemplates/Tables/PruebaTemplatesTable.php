@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Tables;
+namespace Modules\Inspeccion\Filament\Resources\PruebaTemplates\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -8,7 +8,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class ChecklistTemplatesTable
+class PruebaTemplatesTable
 {
     public static function configure(Table $table): Table
     {
@@ -18,7 +18,7 @@ class ChecklistTemplatesTable
                     ->label(__('inspeccion.catalogos.campos.nombre'))
                     ->searchable(),
                 TextColumn::make('items_count')
-                    ->label(__('inspeccion.checklist.item_library.plural'))
+                    ->label(__('inspeccion.prueba.item_library.plural'))
                     ->counts('items'),
             ])
             ->filters([])

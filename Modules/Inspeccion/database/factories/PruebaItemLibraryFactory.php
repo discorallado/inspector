@@ -3,11 +3,11 @@
 namespace Modules\Inspeccion\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\Inspeccion\Models\ChecklistItemLibrary;
+use Modules\Inspeccion\Models\PruebaItemLibrary;
 
-class ChecklistItemLibraryFactory extends Factory
+class PruebaItemLibraryFactory extends Factory
 {
-    protected $model = ChecklistItemLibrary::class;
+    protected $model = PruebaItemLibrary::class;
 
     public function definition(): array
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistTemplates;
+namespace Modules\Inspeccion\Filament\Resources\PruebaTemplates;
 
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -8,19 +8,19 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Modules\Inspeccion\Filament\Concerns\PerteneceAConfiguracion;
-use Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Pages\CreateChecklistTemplate;
-use Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Pages\EditChecklistTemplate;
-use Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Pages\ListChecklistTemplates;
-use Modules\Inspeccion\Filament\Resources\ChecklistTemplates\RelationManagers\ItemsRelationManager;
-use Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Schemas\ChecklistTemplateForm;
-use Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Tables\ChecklistTemplatesTable;
-use Modules\Inspeccion\Models\ChecklistTemplate;
+use Modules\Inspeccion\Filament\Resources\PruebaTemplates\Pages\CreatePruebaTemplate;
+use Modules\Inspeccion\Filament\Resources\PruebaTemplates\Pages\EditPruebaTemplate;
+use Modules\Inspeccion\Filament\Resources\PruebaTemplates\Pages\ListPruebaTemplates;
+use Modules\Inspeccion\Filament\Resources\PruebaTemplates\RelationManagers\ItemsRelationManager;
+use Modules\Inspeccion\Filament\Resources\PruebaTemplates\Schemas\PruebaTemplateForm;
+use Modules\Inspeccion\Filament\Resources\PruebaTemplates\Tables\PruebaTemplatesTable;
+use Modules\Inspeccion\Models\PruebaTemplate;
 
-class ChecklistTemplateResource extends Resource
+class PruebaTemplateResource extends Resource
 {
     use PerteneceAConfiguracion;
 
-    protected static ?string $model = ChecklistTemplate::class;
+    protected static ?string $model = PruebaTemplate::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
@@ -33,22 +33,22 @@ class ChecklistTemplateResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('inspeccion.checklist.template.singular');
+        return __('inspeccion.prueba.template.singular');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('inspeccion.checklist.template.plural');
+        return __('inspeccion.prueba.template.plural');
     }
 
     public static function form(Schema $schema): Schema
     {
-        return ChecklistTemplateForm::configure($schema);
+        return PruebaTemplateForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return ChecklistTemplatesTable::configure($table);
+        return PruebaTemplatesTable::configure($table);
     }
 
     public static function getRelations(): array
@@ -61,9 +61,9 @@ class ChecklistTemplateResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListChecklistTemplates::route('/'),
-            'create' => CreateChecklistTemplate::route('/create'),
-            'edit' => EditChecklistTemplate::route('/{record}/edit'),
+            'index' => ListPruebaTemplates::route('/'),
+            'create' => CreatePruebaTemplate::route('/create'),
+            'edit' => EditPruebaTemplate::route('/{record}/edit'),
         ];
     }
 }

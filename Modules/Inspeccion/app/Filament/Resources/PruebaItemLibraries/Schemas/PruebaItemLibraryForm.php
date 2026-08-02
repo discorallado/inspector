@@ -1,26 +1,26 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistItemLibraries\Schemas;
+namespace Modules\Inspeccion\Filament\Resources\PruebaItemLibraries\Schemas;
 
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
-class ChecklistItemLibraryForm
+class PruebaItemLibraryForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
             TextInput::make('categoria')
-                ->label(__('inspeccion.checklist.campos.categoria'))
+                ->label(__('inspeccion.prueba.campos.categoria'))
                 ->required(),
             Textarea::make('item')
-                ->label(__('inspeccion.checklist.campos.item'))
+                ->label(__('inspeccion.prueba.campos.item'))
                 ->required()
                 ->columnSpanFull(),
             TextInput::make('referencia_normativa')
-                ->label(__('inspeccion.checklist.campos.referencia_normativa')),
+                ->label(__('inspeccion.prueba.campos.referencia_normativa')),
             TextInput::make('orden')
                 ->label(__('inspeccion.catalogos.campos.orden'))
                 ->required()

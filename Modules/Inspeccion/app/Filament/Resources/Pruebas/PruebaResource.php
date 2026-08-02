@@ -1,31 +1,28 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistEjecucions;
+namespace Modules\Inspeccion\Filament\Resources\Pruebas;
 
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Modules\Inspeccion\Filament\Concerns\PerteneceAInspeccionCalidad;
-use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Pages\CreateChecklistEjecucion;
-use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Pages\EditChecklistEjecucion;
-use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Pages\ListChecklistEjecucions;
-use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\RelationManagers\ItemsRelationManager;
-use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Schemas\ChecklistEjecucionForm;
-use Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Tables\ChecklistEjecucionsTable;
-use Modules\Inspeccion\Models\ChecklistEjecucion;
+use Modules\Inspeccion\Filament\Resources\Pruebas\Pages\CreatePrueba;
+use Modules\Inspeccion\Filament\Resources\Pruebas\Pages\EditPrueba;
+use Modules\Inspeccion\Filament\Resources\Pruebas\Pages\ListPruebas;
+use Modules\Inspeccion\Filament\Resources\Pruebas\RelationManagers\ItemsRelationManager;
+use Modules\Inspeccion\Filament\Resources\Pruebas\Schemas\PruebaForm;
+use Modules\Inspeccion\Filament\Resources\Pruebas\Tables\PruebasTable;
+use Modules\Inspeccion\Models\Prueba;
 
 /**
- * Sin ítem propio en el menú del cluster: se llega a una ejecución de
- * checklist siempre desde la Visita de Inspección que la originó
- * (VisitaInspeccionResource > ChecklistEjecucionesRelationManager).
+ * Sin ítem propio en el menú: se llega a una Prueba siempre desde su
+ * Tablero (TableroResource > PruebasRelationManager) — antes se llegaba
+ * desde VisitaInspeccion, cambió con el rename (ver ADR).
  */
-class ChecklistEjecucionResource extends Resource
+class PruebaResource extends Resource
 {
-    use PerteneceAInspeccionCalidad;
-
-    protected static ?string $model = ChecklistEjecucion::class;
+    protected static ?string $model = Prueba::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
@@ -35,22 +32,22 @@ class ChecklistEjecucionResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('inspeccion.checklist.ejecucion.singular');
+        return __('inspeccion.prueba.ejecucion.singular');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('inspeccion.checklist.ejecucion.plural');
+        return __('inspeccion.prueba.ejecucion.plural');
     }
 
     public static function form(Schema $schema): Schema
     {
-        return ChecklistEjecucionForm::configure($schema);
+        return PruebaForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return ChecklistEjecucionsTable::configure($table);
+        return PruebasTable::configure($table);
     }
 
     public static function getRelations(): array
@@ -63,9 +60,9 @@ class ChecklistEjecucionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListChecklistEjecucions::route('/'),
-            'create' => CreateChecklistEjecucion::route('/create'),
-            'edit' => EditChecklistEjecucion::route('/{record}/edit'),
+            'index' => ListPruebas::route('/'),
+            'create' => CreatePrueba::route('/create'),
+            'edit' => EditPrueba::route('/{record}/edit'),
         ];
     }
 }

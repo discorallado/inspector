@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistTemplates\RelationManagers;
+namespace Modules\Inspeccion\Filament\Resources\PruebaTemplates\RelationManagers;
 
 use Filament\Actions\AttachAction;
 use Filament\Actions\BulkActionGroup;
@@ -25,24 +25,24 @@ class ItemsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('item')
-            // Calificado porque tanto la tabla pivote (checklist_template_items)
-            // como la relacionada (checklist_item_libraries) tienen columna
+            // Calificado porque tanto la tabla pivote (prueba_template_items)
+            // como la relacionada (prueba_item_libraries) tienen columna
             // `orden` — sin calificar, el ORDER BY queda ambiguo para MariaDB
-            // en cuanto la relación hace join (ChecklistTemplate::items() ya
+            // en cuanto la relación hace join (PruebaTemplate::items() ya
             // ordena por el pivote). Filament recorta el prefijo solo al
             // persistir el reorder contra el pivote, así que calificar acá
             // no rompe el guardado.
-            ->reorderable('checklist_template_items.orden')
-            ->defaultSort('checklist_template_items.orden')
+            ->reorderable('prueba_template_items.orden')
+            ->defaultSort('prueba_template_items.orden')
             ->columns([
                 TextColumn::make('categoria')
-                    ->label(__('inspeccion.checklist.campos.categoria')),
+                    ->label(__('inspeccion.prueba.campos.categoria')),
                 TextColumn::make('item')
-                    ->label(__('inspeccion.checklist.campos.item'))
+                    ->label(__('inspeccion.prueba.campos.item'))
                     ->wrap()
                     ->searchable(),
                 TextColumn::make('referencia_normativa')
-                    ->label(__('inspeccion.checklist.campos.referencia_normativa')),
+                    ->label(__('inspeccion.prueba.campos.referencia_normativa')),
             ])
             ->filters([])
             ->headerActions([

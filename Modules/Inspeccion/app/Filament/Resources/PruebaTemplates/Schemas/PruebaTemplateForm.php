@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Schemas;
+namespace Modules\Inspeccion\Filament\Resources\PruebaTemplates\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
-class ChecklistTemplateForm
+class PruebaTemplateForm
 {
     public static function configure(Schema $schema): Schema
     {

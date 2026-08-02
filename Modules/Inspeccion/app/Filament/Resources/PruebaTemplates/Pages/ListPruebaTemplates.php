@@ -1,14 +1,14 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistTemplates\Pages;
+namespace Modules\Inspeccion\Filament\Resources\PruebaTemplates\Pages;
 
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Modules\Inspeccion\Filament\Resources\ChecklistTemplates\ChecklistTemplateResource;
+use Modules\Inspeccion\Filament\Resources\PruebaTemplates\PruebaTemplateResource;
 
-class ListChecklistTemplates extends ListRecords
+class ListPruebaTemplates extends ListRecords
 {
-    protected static string $resource = ChecklistTemplateResource::class;
+    protected static string $resource = PruebaTemplateResource::class;
 
     protected function getHeaderActions(): array
     {

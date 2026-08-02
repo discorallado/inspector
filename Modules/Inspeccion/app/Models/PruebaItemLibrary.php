@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class ChecklistItemLibrary extends Model
+class PruebaItemLibrary extends Model
 {
     use HasFactory;
 
-    protected $table = 'checklist_item_libraries';
+    protected $table = 'prueba_item_libraries';
 
     protected $fillable = [
         'organization_id',
@@ -28,9 +28,9 @@ class ChecklistItemLibrary extends Model
         ];
     }
 
-    public function checklistTemplates(): BelongsToMany
+    public function pruebaTemplates(): BelongsToMany
     {
-        return $this->belongsToMany(ChecklistTemplate::class, 'checklist_template_items')
+        return $this->belongsToMany(PruebaTemplate::class, 'prueba_template_items')
             ->withPivot('orden');
     }
 }

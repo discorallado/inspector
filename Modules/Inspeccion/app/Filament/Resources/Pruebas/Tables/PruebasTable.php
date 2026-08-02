@@ -1,26 +1,27 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\ChecklistEjecucions\Tables;
+namespace Modules\Inspeccion\Filament\Resources\Pruebas\Tables;
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 
-class ChecklistEjecucionsTable
+class PruebasTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('visitaInspeccion.fecha')
-                    ->label(__('inspeccion.visita_inspeccion.campos.fecha'))
-                    ->date(),
                 TextColumn::make('tablero.tag')
                     ->label(__('inspeccion.observacion.campos.tablero')),
-                TextColumn::make('checklistTemplate.nombre')
-                    ->label(__('inspeccion.checklist.template.singular')),
+                TextColumn::make('visitaInspeccion.fecha')
+                    ->label(__('inspeccion.visita_inspeccion.campos.fecha'))
+                    ->date()
+                    ->placeholder('—'),
+                TextColumn::make('pruebaTemplate.nombre')
+                    ->label(__('inspeccion.prueba.template.singular')),
                 TextColumn::make('items_count')
-                    ->label(__('inspeccion.checklist.campos.item'))
+                    ->label(__('inspeccion.prueba.campos.item'))
                     ->counts('items'),
             ])
             ->filters(AccionesBorradoLogico::filtros())

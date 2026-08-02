@@ -3,16 +3,16 @@
 namespace Modules\Inspeccion\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\Inspeccion\Models\ChecklistTemplate;
+use Modules\Inspeccion\Models\PruebaTemplate;
 
-class ChecklistTemplateFactory extends Factory
+class PruebaTemplateFactory extends Factory
 {
-    protected $model = ChecklistTemplate::class;
+    protected $model = PruebaTemplate::class;
 
     public function definition(): array
     {
         return [
-            'nombre' => 'Checklist '.fake()->unique()->word(),
+            'nombre' => 'Prueba '.fake()->unique()->word(),
         ];
     }
 }

@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ChecklistEjecucionItem extends Model
+class PruebaItem extends Model
 {
     use HasFactory;
 
-    protected $table = 'checklist_ejecucion_items';
+    protected $table = 'prueba_items';
 
     protected $fillable = [
-        'checklist_ejecucion_id',
-        'checklist_item_library_id',
+        'prueba_id',
+        'prueba_item_library_id',
         'categoria',
         'item',
         'referencia_normativa',
@@ -23,14 +23,14 @@ class ChecklistEjecucionItem extends Model
         'observacion',
     ];
 
-    public function checklistEjecucion(): BelongsTo
+    public function prueba(): BelongsTo
     {
-        return $this->belongsTo(ChecklistEjecucion::class);
+        return $this->belongsTo(Prueba::class);
     }
 
-    public function checklistItemLibrary(): BelongsTo
+    public function pruebaItemLibrary(): BelongsTo
     {
-        return $this->belongsTo(ChecklistItemLibrary::class);
+        return $this->belongsTo(PruebaItemLibrary::class);
     }
 
     public function resultadoChecklist(): BelongsTo

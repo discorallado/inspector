@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ChecklistTemplate extends Model
+class PruebaTemplate extends Model
 {
     use HasFactory;
 
-    protected $table = 'checklist_templates';
+    protected $table = 'prueba_templates';
 
     protected $fillable = [
         'organization_id',
@@ -20,13 +20,13 @@ class ChecklistTemplate extends Model
 
     public function items(): BelongsToMany
     {
-        return $this->belongsToMany(ChecklistItemLibrary::class, 'checklist_template_items')
+        return $this->belongsToMany(PruebaItemLibrary::class, 'prueba_template_items')
             ->withPivot('orden')
             ->orderByPivot('orden');
     }
 
-    public function checklistEjecuciones(): HasMany
+    public function pruebas(): HasMany
     {
-        return $this->hasMany(ChecklistEjecucion::class);
+        return $this->hasMany(Prueba::class);
     }
 }
