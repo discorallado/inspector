@@ -63,10 +63,14 @@ return new class extends Migration
 
         Schema::rename('prueba_items', 'checklist_ejecucion_items');
 
-        Schema::table('pruebas', function (Blueprint $table) {
-            $table->foreignId('visita_inspeccion_id')->nullable(false)->change();
-        });
-
+        // No se revierte a NOT NULL: una vez que el módulo se usa como
+        // está diseñado (Prueba se crea desde Tablero, no siempre desde
+        // una Visita), es normal y esperado tener filas reales con
+        // visita_inspeccion_id null — forzar NOT NULL acá rompería
+        // migrate:rollback con un QueryException en cuanto exista una
+        // sola Prueba así (confirmado con /revisor: reproducido con un
+        // test real). down() debe poder correr siempre, no solo si la
+        // tabla está vacía.
         Schema::table('pruebas', function (Blueprint $table) {
             $table->renameColumn('prueba_template_id', 'checklist_template_id');
         });
