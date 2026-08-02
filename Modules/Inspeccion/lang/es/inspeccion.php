@@ -109,6 +109,12 @@ return [
             'alta' => 'Alta',
             'critica' => 'Crítica',
         ],
+        'kanban' => [
+            'title' => 'Ver Kanban',
+            'todas_las_actividades' => 'Todas las actividades',
+            'todas_las_prioridades' => 'Todas las prioridades',
+            'columna_vacia' => 'Sin tareas',
+        ],
     ],
 
     'visita_inspeccion' => [

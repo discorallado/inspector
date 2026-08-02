@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\CreateTablero;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\EditTablero;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\ListTableros;
+use Modules\Inspeccion\Filament\Resources\Tableros\Pages\TableroKanbanBoard;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ActividadesRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ControlCambiosRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ObservacionesRelationManager;
@@ -69,6 +70,7 @@ class TableroResource extends Resource
             'index' => ListTableros::route('/'),
             'create' => CreateTablero::route('/create'),
             'edit' => EditTablero::route('/{record}/edit'),
+            'kanban' => TableroKanbanBoard::route('/{record}/kanban'),
         ];
     }
 }

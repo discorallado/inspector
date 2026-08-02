@@ -2,14 +2,19 @@
 
 namespace Modules\Inspeccion\Enums;
 
+use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 
 /**
  * Portado de axon (app/Enums/TaskStatus.php) — mismos 5 valores. Implementa
  * HasLabel para que los Select/badges de Filament (ActividadesRelationManager,
- * PR6) muestren la etiqueta traducida en vez del value crudo.
+ * PR6) muestren la etiqueta traducida en vez del value crudo. HasColor/HasIcon
+ * (PR7): colores semánticos de Filament (gray/info/warning/success/danger),
+ * ya registrados por el panel — no hace falta un tema de colores paralelo
+ * para las columnas del kanban.
  */
-enum TaskStatus: string implements HasLabel
+enum TaskStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Pendiente = 'pendiente';
     case EnProgreso = 'en_progreso';
@@ -25,6 +30,28 @@ enum TaskStatus: string implements HasLabel
     public function getLabel(): string
     {
         return __("inspeccion.tarea.status.{$this->value}");
+    }
+
+    public function getColor(): string|array|null
+    {
+        return match ($this) {
+            self::Pendiente => 'gray',
+            self::EnProgreso => 'info',
+            self::EnRevision => 'warning',
+            self::Completada => 'success',
+            self::Bloqueada => 'danger',
+        };
+    }
+
+    public function getIcon(): ?string
+    {
+        return match ($this) {
+            self::Pendiente => 'heroicon-o-clock',
+            self::EnProgreso => 'heroicon-o-play',
+            self::EnRevision => 'heroicon-o-eye',
+            self::Completada => 'heroicon-o-check-circle',
+            self::Bloqueada => 'heroicon-o-x-circle',
+        };
     }
 
     /**

@@ -2,11 +2,15 @@
 
 namespace Modules\Inspeccion\Filament\Resources\Tableros\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Modules\Inspeccion\Filament\Resources\Tableros\TableroResource;
+use Modules\Inspeccion\Models\Tablero;
 
 class TablerosTable
 {
@@ -34,6 +38,10 @@ class TablerosTable
             ])
             ->filters([])
             ->recordActions([
+                Action::make('kanban')
+                    ->label(__('inspeccion.tarea.kanban.title'))
+                    ->icon(Heroicon::OutlinedViewColumns)
+                    ->url(fn (Tablero $record): string => TableroResource::getUrl('kanban', ['record' => $record])),
                 EditAction::make(),
             ])
             ->toolbarActions([
