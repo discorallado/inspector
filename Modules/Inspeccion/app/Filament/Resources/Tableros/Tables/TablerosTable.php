@@ -42,6 +42,10 @@ class TablerosTable
                     ->label(__('inspeccion.tarea.kanban.title'))
                     ->icon(Heroicon::OutlinedViewColumns)
                     ->url(fn (Tablero $record): string => TableroResource::getUrl('kanban', ['record' => $record])),
+                Action::make('gantt')
+                    ->label(__('inspeccion.tarea.gantt.title'))
+                    ->icon(Heroicon::OutlinedChartBar)
+                    ->url(fn (Tablero $record): string => TableroResource::getUrl('gantt', ['record' => $record])),
                 EditAction::make(),
             ])
             ->toolbarActions([

@@ -81,11 +81,23 @@ class Tarea extends Model
         return $this->belongsTo(TableroHito::class);
     }
 
-    // predecesoras()/sucesoras() (relaciones vía tarea_links) se agregan
-    // en PR8 junto con el Gantt: source_id/target_id de tarea_links puede
-    // apuntar a una Tarea O a una Actividad (igual que axon, ver el
-    // comentario de la migración), y con id autoincremental (no ULID como
-    // axon) hay colisión real de ids entre ambas tablas — un
-    // BelongsToMany ingenuo acá sería sutilmente incorrecto sin resolver
-    // primero cómo se distingue el tipo del extremo del link.
+    /**
+     * PR8 (ADR 0015): a diferencia de axon (TaskLink.source_id/target_id
+     * son ULID, sin colisión posible entre Task y Activity), acá
+     * tarea_links.source_id/target_id son enteros autoincrementales —
+     * una Tarea #5 y una Actividad #5 comparten id. Para no introducir esa
+     * ambigüedad, el Gantt de Inspeccion solo permite dependencias
+     * Tarea-Tarea (TableroGanttChart valida esto antes de crear el link,
+     * y el JS bloquea el intento desde una fila de Actividad). Con esa
+     * restricción, source_id/target_id son siempre ids de Tarea reales.
+     */
+    public function linksComoOrigen(): HasMany
+    {
+        return $this->hasMany(TareaLink::class, 'source_id');
+    }
+
+    public function linksComoDestino(): HasMany
+    {
+        return $this->hasMany(TareaLink::class, 'target_id');
+    }
 }

@@ -19,6 +19,10 @@ class EditTablero extends EditRecord
                 ->label(__('inspeccion.tarea.kanban.title'))
                 ->icon(Heroicon::OutlinedViewColumns)
                 ->url(fn (): string => TableroResource::getUrl('kanban', ['record' => $this->record])),
+            Action::make('gantt')
+                ->label(__('inspeccion.tarea.gantt.title'))
+                ->icon(Heroicon::OutlinedChartBar)
+                ->url(fn (): string => TableroResource::getUrl('gantt', ['record' => $this->record])),
             DeleteAction::make(),
         ];
     }
