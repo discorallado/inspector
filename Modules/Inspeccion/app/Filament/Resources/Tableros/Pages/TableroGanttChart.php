@@ -142,12 +142,30 @@ class TableroGanttChart extends Page
             ->findOrFail($tareaId);
     }
 
+    /**
+     * /qa: ni el drag de la barra ni el modal validaban start <= end —
+     * dhtmlx no manda fechas invertidas en uso normal, pero es un
+     * wire:call público. Una tarea con due_date antes que start_date es
+     * un dato sin sentido (barra de duración negativa en el propio
+     * Gantt), no una variante de negocio válida.
+     */
+    private function validarRangoFechas(?string $startDate, ?string $endDate): void
+    {
+        if (! $startDate || ! $endDate) {
+            return;
+        }
+
+        abort_if($endDate < $startDate, 422);
+    }
+
     #[Renderless]
     public function updateTareaFechas(string $tareaId, string $startDate, string $endDate): void
     {
         $tarea = $this->tareaDelTablero($tareaId);
 
         $this->authorize('update', $tarea);
+
+        $this->validarRangoFechas($startDate, $endDate);
 
         $tarea->update(['start_date' => $startDate, 'due_date' => $endDate]);
     }
@@ -251,6 +269,8 @@ class TableroGanttChart extends Page
         $tarea = $this->tareaDelTablero($tareaId);
 
         $this->authorize('update', $tarea);
+
+        $this->validarRangoFechas($startDate ?: null, $endDate ?: null);
 
         $tarea->update([
             'nombre' => $nombre,

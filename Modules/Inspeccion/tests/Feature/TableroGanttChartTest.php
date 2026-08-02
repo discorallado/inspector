@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 use Modules\Inspeccion\Database\Seeders\EstadoAvanceSeeder;
 use Modules\Inspeccion\Database\Seeders\EstadoCambioSeeder;
@@ -245,4 +246,73 @@ it('la ruta /gantt responde 200 para un tablero SIN tareas (bug de gantt.init() 
         ->getContent();
 
     expect($html)->not->toContain('id="dhx-gantt"');
+});
+
+it('rechaza fechas invertidas (due_date antes que start_date) al arrastrar la barra', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $tarea = Tarea::factory()->for($this->actividad)->create(['start_date' => '2026-01-01', 'due_date' => '2026-01-10']);
+
+    Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->call('updateTareaFechas', (string) $tarea->id, '2026-05-10', '2026-05-01')
+        ->assertStatus(422);
+
+    expect($tarea->fresh()->start_date->toDateString())->toBe('2026-01-01')
+        ->and($tarea->fresh()->due_date->toDateString())->toBe('2026-01-10');
+});
+
+it('rechaza fechas invertidas desde el modal de edición (updateTareaDetalles)', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $tarea = Tarea::factory()->for($this->actividad)->create(['start_date' => '2026-01-01', 'due_date' => '2026-01-10']);
+
+    Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->call('updateTareaDetalles', (string) $tarea->id, 'Nombre nuevo', '', '2026-05-10', '2026-05-01')
+        ->assertStatus(422);
+
+    expect($tarea->fresh()->nombre)->not->toBe('Nombre nuevo');
+});
+
+it('acepta borrar solo una fecha desde el modal (la otra queda null, no dispara la validación de rango)', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $tarea = Tarea::factory()->for($this->actividad)->create(['start_date' => '2026-01-01', 'due_date' => '2026-01-10']);
+
+    Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->call('updateTareaDetalles', (string) $tarea->id, $tarea->nombre, '', '2026-01-01', '');
+
+    expect($tarea->fresh()->due_date)->toBeNull();
+});
+
+it('actividades/tareas soft-deleted no aparecen en el gantt', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    Tarea::factory()->for($this->actividad)->create();
+    $this->actividad->delete();
+
+    $data = Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->instance()
+        ->getGanttData();
+
+    expect($data['data'])->toBeEmpty();
+});
+
+it('agregarLink rechaza una tarea de OTRO tablero aunque no venga con prefijo act-', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $propia = Tarea::factory()->for($this->actividad)->create();
+
+    $otroTablero = Tablero::factory()->for(Proyecto::factory())->create();
+    $ajena = Tarea::factory()->for(Actividad::factory()->for($otroTablero))->create();
+
+    expect(fn () => Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->call('agregarLink', (string) $propia->id, (string) $ajena->id, 0))
+        ->toThrow(ModelNotFoundException::class);
+
+    expect(TareaLink::query()->count())->toBe(0);
 });

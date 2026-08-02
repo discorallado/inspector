@@ -191,3 +191,18 @@ it('un status inexistente en el enum responde 422 en vez de un 500', function ()
 
     expect($tarea->fresh()->status)->toBe(TaskStatus::Pendiente);
 });
+
+it('una tarea soft-deleted no aparece en ninguna columna', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $tarea = Tarea::factory()->for($this->actividad)->create(['status' => TaskStatus::Pendiente]);
+    $tarea->delete();
+
+    $columns = Livewire::test(TableroKanbanBoard::class, ['record' => $this->tablero->id])
+        ->instance()
+        ->getColumns();
+
+    $pendientes = collect($columns)->firstWhere('status', TaskStatus::Pendiente);
+    expect($pendientes['tareas'])->toHaveCount(0);
+});
