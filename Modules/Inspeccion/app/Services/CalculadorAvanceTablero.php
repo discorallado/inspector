@@ -8,7 +8,7 @@ use Modules\Inspeccion\Models\Tarea;
 
 /**
  * ADR 0009 §2.2 / ADR 0012: pondera sobre Tarea.peso (vía Actividad) en
- * vez de TableroHito.peso — misma fórmula, TableroHito queda deprecado
+ * vez de HitoLegado.peso — misma fórmula, HitoLegado queda deprecado
  * (referencia histórica de solo lectura hasta el cleanup de PR9).
  */
 class CalculadorAvanceTablero
@@ -28,7 +28,7 @@ class CalculadorAvanceTablero
 
     /**
      * avance% = Σ(peso × valor_estado) / Σ(peso) × 100, excluyendo tareas
-     * con excluye_calculo = true (ej. TableroHito 'na' migrado) o sin peso
+     * con excluye_calculo = true (ej. HitoLegado 'na' migrado) o sin peso
      * asignado (peso nulo no participa del ponderado). Pública y estática
      * para reutilizarse también a nivel Actividad (columna "avance" de
      * ActividadesRelationManager), sin duplicar la fórmula.

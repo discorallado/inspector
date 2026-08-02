@@ -4,17 +4,17 @@ namespace Modules\Inspeccion\Policies;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
-use Modules\Inspeccion\Models\TableroHito;
+use Modules\Inspeccion\Models\HitoLegado;
 
 // TODO: reemplazar por policy real al integrar a axon.
-class TableroHitoPolicy
+class HitoLegadoPolicy
 {
     public function viewAny(User $user): bool
     {
         return Gate::allows('tablero.ver');
     }
 
-    public function view(User $user, TableroHito $hito): bool
+    public function view(User $user, HitoLegado $hito): bool
     {
         return Gate::allows('tablero.ver');
     }
@@ -24,12 +24,12 @@ class TableroHitoPolicy
         return Gate::allows('tablero.gestionar');
     }
 
-    public function update(User $user, TableroHito $hito): bool
+    public function update(User $user, HitoLegado $hito): bool
     {
-        return Gate::allows('tablero_hito.actualizar');
+        return Gate::allows('hito_legado.actualizar');
     }
 
-    public function delete(User $user, TableroHito $hito): bool
+    public function delete(User $user, HitoLegado $hito): bool
     {
         return Gate::allows('tablero.gestionar');
     }

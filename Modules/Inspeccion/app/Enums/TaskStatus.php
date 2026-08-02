@@ -57,7 +57,7 @@ enum TaskStatus: string implements HasColor, HasIcon, HasLabel
     /**
      * Equivalente al campo `valor` de EstadoAvance (catálogo), para que
      * CalculadorAvanceTablero pondere sobre Tarea con la misma fórmula.
-     * EnRevision no tiene equivalente histórico (ningún TableroHito
+     * EnRevision no tiene equivalente histórico (ningún HitoLegado
      * migrado usó ese estado) — 0.9 es una estimación razonable ("el
      * trabajo está prácticamente hecho, pendiente de confirmar"), ajustable
      * sin impacto en datos ya migrados si no encaja en la práctica.

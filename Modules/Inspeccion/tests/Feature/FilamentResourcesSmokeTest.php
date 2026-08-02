@@ -17,7 +17,7 @@ it('carga cada página de listado del panel sin errores', function (string $url)
     '/admin/inspeccion-calidad/visita-inspeccions',
     '/admin/inspeccion-calidad/observacions',
     '/admin/inspeccion-calidad/checklist-ejecucions',
-    '/admin/configuracion/grupo-hitos',
+    '/admin/configuracion/grupo-hito-legados',
     '/admin/configuracion/estado-avances',
     '/admin/configuracion/especialidads',
     '/admin/configuracion/tipo-observacions',

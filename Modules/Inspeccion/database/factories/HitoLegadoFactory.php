@@ -4,19 +4,19 @@ namespace Modules\Inspeccion\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Inspeccion\Models\EstadoAvance;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
+use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Tablero;
-use Modules\Inspeccion\Models\TableroHito;
 
-class TableroHitoFactory extends Factory
+class HitoLegadoFactory extends Factory
 {
-    protected $model = TableroHito::class;
+    protected $model = HitoLegado::class;
 
     public function definition(): array
     {
         return [
             'tablero_id' => Tablero::factory(),
-            'grupo_hito_id' => GrupoHito::factory(),
+            'grupo_hito_id' => GrupoHitoLegado::factory(),
             'estado_avance_id' => EstadoAvance::factory(),
             'item' => fake()->numerify('#.#'),
             'nombre' => fake()->sentence(4),

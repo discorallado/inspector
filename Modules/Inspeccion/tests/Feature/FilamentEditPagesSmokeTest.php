@@ -8,11 +8,11 @@ use Modules\Inspeccion\Models\ControlCambio;
 use Modules\Inspeccion\Models\EstadoAvance;
 use Modules\Inspeccion\Models\EstadoCambio;
 use Modules\Inspeccion\Models\EstadoObservacion;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
+use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Observacion;
 use Modules\Inspeccion\Models\Proyecto;
 use Modules\Inspeccion\Models\Tablero;
-use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Models\VisitaInspeccion;
 
 beforeEach(function () {
@@ -21,8 +21,8 @@ beforeEach(function () {
 
     $this->proyecto = Proyecto::factory()->create();
     $this->tablero = Tablero::factory()->for($this->proyecto)->create();
-    TableroHito::factory()->for($this->tablero)->create([
-        'grupo_hito_id' => GrupoHito::first()->id,
+    HitoLegado::factory()->for($this->tablero)->create([
+        'grupo_hito_id' => GrupoHitoLegado::first()->id,
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
     ]);
 

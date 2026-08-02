@@ -6,10 +6,10 @@ use Illuminate\Database\Seeder;
 use Modules\Inspeccion\Models\ControlCambio;
 use Modules\Inspeccion\Models\EstadoAvance;
 use Modules\Inspeccion\Models\EstadoCambio;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
+use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Proyecto;
 use Modules\Inspeccion\Models\Tablero;
-use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Services\CalculadorAvanceTablero;
 
 /**
@@ -122,7 +122,7 @@ class SeguimientoIntegracionTablerosSeeder extends Seeder
         // TODO: nombre de Proyecto tentativo — la planilla no lo especifica, viene con el campo "Proyecto:" en blanco.
         $proyecto = Proyecto::query()->firstOrCreate(['nombre' => 'IFX']);
 
-        $grupos = GrupoHito::query()->orderBy('orden')->pluck('id', 'orden');
+        $grupos = GrupoHitoLegado::query()->orderBy('orden')->pluck('id', 'orden');
         $estadosAvance = EstadoAvance::query()->pluck('id', 'codigo');
         $estadoCambioPropuesto = EstadoCambio::query()->where('codigo', 'propuesto')->value('id');
 
@@ -149,7 +149,7 @@ class SeguimientoIntegracionTablerosSeeder extends Seeder
                 // real al momento de la planilla), no una transición hecha
                 // por un usuario. TransicionEstadoGuard solo debe validar
                 // transiciones de negocio en vivo, no un import de una vez.
-                TableroHito::withoutEvents(fn () => TableroHito::query()->updateOrCreate(
+                HitoLegado::withoutEvents(fn () => HitoLegado::query()->updateOrCreate(
                     ['tablero_id' => $tablero->id, 'item' => $definicion['item']],
                     [
                         'grupo_hito_id' => $grupos[$definicion['grupo']],

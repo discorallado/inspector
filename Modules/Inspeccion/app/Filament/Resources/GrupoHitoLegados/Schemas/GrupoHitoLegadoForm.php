@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\Inspeccion\Filament\Resources\GrupoHitos\Schemas;
+namespace Modules\Inspeccion\Filament\Resources\GrupoHitoLegados\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
-class GrupoHitoForm
+class GrupoHitoLegadoForm
 {
     public static function configure(Schema $schema): Schema
     {

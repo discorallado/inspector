@@ -17,8 +17,8 @@ use Modules\Inspeccion\Filament\Support\AccionesBorradoLogico;
 use Modules\Inspeccion\Models\Actividad;
 
 /**
- * Reemplaza a TableroHitosRelationManager como vista principal de avance
- * (ADR 0009/0012 — TableroHito queda de solo lectura, deprecado). Alcance
+ * Reemplaza a HitosLegadosRelationManager como vista principal de avance
+ * (ADR 0009/0012 — HitoLegado queda de solo lectura, deprecado). Alcance
  * acotado a un RelationManager plano + drill-down por acción "Ver tareas"
  * hacia ActividadResource (no un accordion custom estilo axon): Tablero
  * ->tareas() es un HasManyThrough sin soporte de create(), por lo que

@@ -39,9 +39,13 @@ class Tablero extends Model
         return $this->belongsTo(Proyecto::class);
     }
 
-    public function tableroHitos(): HasMany
+    /**
+     * Sistema viejo (deprecado, ver HitoLegado) — árbol paralelo a
+     * actividades(), no una capa por encima. No confundir jerarquías.
+     */
+    public function hitosLegados(): HasMany
     {
-        return $this->hasMany(TableroHito::class);
+        return $this->hasMany(HitoLegado::class);
     }
 
     public function actividades(): HasMany

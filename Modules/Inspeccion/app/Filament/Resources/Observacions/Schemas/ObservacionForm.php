@@ -27,8 +27,8 @@ class ObservacionForm
                 ->searchable()
                 ->preload(),
             Select::make('tablero_hito_id')
-                ->label(__('inspeccion.observacion.campos.tablero_hito'))
-                ->relationship('tableroHito', 'nombre')
+                ->label(__('inspeccion.observacion.campos.hito_legado'))
+                ->relationship('hitoLegado', 'nombre')
                 ->searchable()
                 ->preload(),
             Select::make('especialidad_id')

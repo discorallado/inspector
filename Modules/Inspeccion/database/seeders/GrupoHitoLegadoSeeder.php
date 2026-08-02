@@ -3,9 +3,9 @@
 namespace Modules\Inspeccion\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
 
-class GrupoHitoSeeder extends Seeder
+class GrupoHitoLegadoSeeder extends Seeder
 {
     public function run(): void
     {
@@ -18,7 +18,7 @@ class GrupoHitoSeeder extends Seeder
             'Pruebas FAT',
             'Embalaje',
             'Despacho',
-        ])->each(fn (string $nombre, int $orden) => GrupoHito::query()->firstOrCreate(
+        ])->each(fn (string $nombre, int $orden) => GrupoHitoLegado::query()->firstOrCreate(
             ['nombre' => $nombre],
             ['orden' => $orden + 1, 'activo' => true],
         ));

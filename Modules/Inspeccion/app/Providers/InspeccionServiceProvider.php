@@ -16,29 +16,29 @@ use Modules\Inspeccion\Models\Especialidad;
 use Modules\Inspeccion\Models\EstadoAvance;
 use Modules\Inspeccion\Models\EstadoCambio;
 use Modules\Inspeccion\Models\EstadoObservacion;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
+use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Observacion;
 use Modules\Inspeccion\Models\Proyecto;
 use Modules\Inspeccion\Models\ResultadoChecklist;
 use Modules\Inspeccion\Models\Severidad;
 use Modules\Inspeccion\Models\Tablero;
-use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Models\Tarea;
 use Modules\Inspeccion\Models\TipoObservacion;
 use Modules\Inspeccion\Models\TransicionEstadoPermitida;
 use Modules\Inspeccion\Models\VisitaInspeccion;
 use Modules\Inspeccion\Observers\ControlCambioObserver;
+use Modules\Inspeccion\Observers\HitoLegadoObserver;
 use Modules\Inspeccion\Observers\ObservacionObserver;
-use Modules\Inspeccion\Observers\TableroHitoObserver;
 use Modules\Inspeccion\Observers\TareaObserver;
 use Modules\Inspeccion\Policies\ActividadPolicy;
 use Modules\Inspeccion\Policies\CatalogoPolicy;
 use Modules\Inspeccion\Policies\ChecklistEjecucionItemPolicy;
 use Modules\Inspeccion\Policies\ChecklistEjecucionPolicy;
 use Modules\Inspeccion\Policies\ControlCambioPolicy;
+use Modules\Inspeccion\Policies\HitoLegadoPolicy;
 use Modules\Inspeccion\Policies\ObservacionPolicy;
 use Modules\Inspeccion\Policies\ProyectoPolicy;
-use Modules\Inspeccion\Policies\TableroHitoPolicy;
 use Modules\Inspeccion\Policies\TableroPolicy;
 use Modules\Inspeccion\Policies\TareaPolicy;
 use Modules\Inspeccion\Policies\UserPolicy;
@@ -107,7 +107,7 @@ class InspeccionServiceProvider extends ModuleServiceProvider
     {
         Gate::policy(Proyecto::class, ProyectoPolicy::class);
         Gate::policy(Tablero::class, TableroPolicy::class);
-        Gate::policy(TableroHito::class, TableroHitoPolicy::class);
+        Gate::policy(HitoLegado::class, HitoLegadoPolicy::class);
         Gate::policy(VisitaInspeccion::class, VisitaInspeccionPolicy::class);
         Gate::policy(Observacion::class, ObservacionPolicy::class);
         Gate::policy(ControlCambio::class, ControlCambioPolicy::class);
@@ -118,7 +118,7 @@ class InspeccionServiceProvider extends ModuleServiceProvider
         Gate::policy(Tarea::class, TareaPolicy::class);
 
         foreach ([
-            GrupoHito::class,
+            GrupoHitoLegado::class,
             EstadoAvance::class,
             Especialidad::class,
             TipoObservacion::class,
@@ -136,7 +136,7 @@ class InspeccionServiceProvider extends ModuleServiceProvider
 
     protected function registerObservers(): void
     {
-        TableroHito::observe(TableroHitoObserver::class);
+        HitoLegado::observe(HitoLegadoObserver::class);
         Observacion::observe(ObservacionObserver::class);
         ControlCambio::observe(ControlCambioObserver::class);
         Tarea::observe(TareaObserver::class);

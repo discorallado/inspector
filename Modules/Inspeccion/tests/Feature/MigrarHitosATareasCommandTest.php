@@ -8,10 +8,10 @@ use Modules\Inspeccion\Database\Seeders\TransicionEstadoPermitidaSeeder;
 use Modules\Inspeccion\Enums\TaskStatus;
 use Modules\Inspeccion\Models\Actividad;
 use Modules\Inspeccion\Models\EstadoAvance;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
+use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Proyecto;
 use Modules\Inspeccion\Models\Tablero;
-use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Models\Tarea;
 
 /**
@@ -24,11 +24,11 @@ beforeEach(function () {
     $this->seed(TransicionEstadoPermitidaSeeder::class);
 
     $this->tablero = Tablero::factory()->for(Proyecto::factory())->create(['tag' => 'T1']);
-    $this->grupo = GrupoHito::factory()->create(['nombre' => 'Fase 1', 'orden' => 1]);
+    $this->grupo = GrupoHitoLegado::factory()->create(['nombre' => 'Fase 1', 'orden' => 1]);
 });
 
-it('convierte un GrupoHito usado por el Tablero en una Actividad', function () {
-    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+it('convierte un GrupoHitoLegado usado por el Tablero en una Actividad', function () {
+    HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
         'item' => '1.1',
     ]));
@@ -41,8 +41,8 @@ it('convierte un GrupoHito usado por el Tablero en una Actividad', function () {
     expect($actividad->orden)->toBe(1);
 });
 
-it('convierte un TableroHito en una Tarea, preservando peso y fechas reales', function () {
-    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+it('convierte un HitoLegado en una Tarea, preservando peso y fechas reales', function () {
+    HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'en_proceso')->value('id'),
         'item' => '1.1',
         'nombre' => 'Fabricación de estructura',
@@ -71,7 +71,7 @@ it('mapea cada EstadoAvance.codigo al TaskStatus correspondiente, incluyendo na 
     ];
 
     foreach ($casos as $item => [$codigo, $_]) {
-        TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+        HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
             'estado_avance_id' => EstadoAvance::query()->where('codigo', $codigo)->value('id'),
             'item' => $item,
         ]));
@@ -86,7 +86,7 @@ it('mapea cada EstadoAvance.codigo al TaskStatus correspondiente, incluyendo na 
 });
 
 it('no revienta con un hito ya Completado (bypassa TareaObserver en el import histórico)', function () {
-    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+    HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'completado')->value('id'),
         'item' => '1.1',
     ]));
@@ -98,7 +98,7 @@ it('no revienta con un hito ya Completado (bypassa TareaObserver en el import hi
 });
 
 it('es idempotente: correrlo dos veces no duplica Actividades ni Tareas', function () {
-    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+    HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
         'item' => '1.1',
     ]));
@@ -113,16 +113,16 @@ it('es idempotente: correrlo dos veces no duplica Actividades ni Tareas', functi
     expect(Tarea::query()->where('code', 'T1-1.1')->value('id'))->toBe($tareaId);
 });
 
-it('no borra ni modifica TableroHito/GrupoHito/EstadoAvance (quedan deprecados, no eliminados)', function () {
-    $hito = TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+it('no borra ni modifica HitoLegado/GrupoHitoLegado/EstadoAvance (quedan deprecados, no eliminados)', function () {
+    $hito = HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
         'item' => '1.1',
     ]));
 
     Artisan::call('inspeccion:migrar-hitos-a-tareas');
 
-    expect(TableroHito::query()->find($hito->id))->not->toBeNull();
-    expect(GrupoHito::query()->find($this->grupo->id))->not->toBeNull();
+    expect(HitoLegado::query()->find($hito->id))->not->toBeNull();
+    expect(GrupoHitoLegado::query()->find($this->grupo->id))->not->toBeNull();
     expect(EstadoAvance::query()->count())->toBeGreaterThan(0);
 });
 
@@ -134,7 +134,7 @@ it('falla fuerte (no migra a Pendiente en silencio) si un EstadoAvance.codigo no
     $estadoRenombrado = EstadoAvance::query()->where('codigo', 'completado')->first();
     $estadoRenombrado->update(['codigo' => 'finalizado']);
 
-    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+    HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => $estadoRenombrado->id,
         'item' => '1.1',
     ]));
@@ -149,11 +149,11 @@ it('no deja Actividades a medio crear si el comando falla a mitad de camino (rol
     // Un hito válido primero (crearía su Actividad), uno inválido después
     // en el mismo Tablero — si el rollback no funcionara, quedaría una
     // Actividad huérfana de una migración que "falló".
-    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+    HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
         'item' => '1.1',
     ]));
-    TableroHito::withoutEvents(fn () => TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+    HitoLegado::withoutEvents(fn () => HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => $estadoRenombrado->id,
         'item' => '1.2',
     ]));
@@ -168,17 +168,17 @@ it('no deja Actividades a medio crear si el comando falla a mitad de camino (rol
     expect(Tarea::query()->count())->toBe(0);
 });
 
-it('cierra el GAP /qa: editar item de un TableroHito entre dos corridas actualiza la misma Tarea, no crea una huérfana', function () {
+it('cierra el GAP /qa: editar item de un HitoLegado entre dos corridas actualiza la misma Tarea, no crea una huérfana', function () {
     // Fix de /revisor (checkpoint pre-PR6, ADR 0012): el matcheo pasó de
     // actividad_id+code (code se deriva de item, un TextInput libre) a
     // tablero_hito_id, estable independiente de lo que cambie en
-    // TableroHito. TableroHitosRelationManager además quedó de solo
+    // HitoLegado. HitosLegadosRelationManager además quedó de solo
     // lectura en el mismo fix, como defensa adicional.
-    TableroHito::withoutEvents(fn () => $hito = TableroHito::factory()->for($this->tablero)->for($this->grupo)->create([
+    HitoLegado::withoutEvents(fn () => $hito = HitoLegado::factory()->for($this->tablero)->for($this->grupo)->create([
         'estado_avance_id' => EstadoAvance::query()->where('codigo', 'pendiente')->value('id'),
         'item' => '1.1',
     ]));
-    $hito = TableroHito::query()->where('item', '1.1')->first();
+    $hito = HitoLegado::query()->where('item', '1.1')->first();
 
     Artisan::call('inspeccion:migrar-hitos-a-tareas');
     expect(Tarea::query()->count())->toBe(1);

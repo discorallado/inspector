@@ -12,7 +12,7 @@ class InspeccionDatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            GrupoHitoSeeder::class,
+            GrupoHitoLegadoSeeder::class,
             EstadoAvanceSeeder::class,
             EspecialidadSeeder::class,
             TipoObservacionSeeder::class,

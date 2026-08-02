@@ -3,11 +3,11 @@
 namespace Modules\Inspeccion\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
 
-class GrupoHitoFactory extends Factory
+class GrupoHitoLegadoFactory extends Factory
 {
-    protected $model = GrupoHito::class;
+    protected $model = GrupoHitoLegado::class;
 
     public function definition(): array
     {

@@ -29,8 +29,8 @@ class EstadoAvance extends Model
         ];
     }
 
-    public function tableroHitos(): HasMany
+    public function hitosLegados(): HasMany
     {
-        return $this->hasMany(TableroHito::class);
+        return $this->hasMany(HitoLegado::class);
     }
 }

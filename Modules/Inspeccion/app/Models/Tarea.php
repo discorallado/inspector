@@ -74,11 +74,13 @@ class Tarea extends Model
     /**
      * Puente temporal con el sistema viejo (ver ADR 0012): clave de
      * matcheo estable para MigrarHitosATareasCommand, independiente del
-     * contenido editable de TableroHito. Se va con el cleanup de PR9.
+     * contenido editable de HitoLegado. Se va con el cleanup de PR9. FK
+     * explícita: la columna sigue llamándose tablero_hito_id (no se tocó
+     * al renombrar el modelo, ver la migración de rename de tablas).
      */
-    public function tableroHito(): BelongsTo
+    public function hitoLegado(): BelongsTo
     {
-        return $this->belongsTo(TableroHito::class);
+        return $this->belongsTo(HitoLegado::class, 'tablero_hito_id');
     }
 
     /**

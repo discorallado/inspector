@@ -50,9 +50,9 @@ class Observacion extends Model
         return $this->belongsTo(Tablero::class);
     }
 
-    public function tableroHito(): BelongsTo
+    public function hitoLegado(): BelongsTo
     {
-        return $this->belongsTo(TableroHito::class);
+        return $this->belongsTo(HitoLegado::class, 'tablero_hito_id');
     }
 
     public function especialidad(): BelongsTo

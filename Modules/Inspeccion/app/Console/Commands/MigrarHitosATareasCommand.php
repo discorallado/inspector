@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\DB;
 use Modules\Inspeccion\Enums\TaskPriority;
 use Modules\Inspeccion\Enums\TaskStatus;
 use Modules\Inspeccion\Models\Actividad;
-use Modules\Inspeccion\Models\GrupoHito;
+use Modules\Inspeccion\Models\GrupoHitoLegado;
+use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Tablero;
-use Modules\Inspeccion\Models\TableroHito;
 use Modules\Inspeccion\Models\Tarea;
 use Modules\Inspeccion\Services\CalculadorAvanceTablero;
 use RuntimeException;
@@ -17,27 +17,28 @@ use RuntimeException;
 /**
  * ADR 0009 §2.5 / ADR 0011: comando de migración de datos, PR5.
  *
- * Cada GrupoHito usado por un Tablero se convierte en una Actividad de ese
- * Tablero; cada TableroHito se convierte en una Tarea de esa Actividad,
- * preservando peso/real_inicio/real_fin y mapeando EstadoAvance.codigo al
- * TaskStatus equivalente. No borra ni modifica TableroHito/GrupoHito/
- * EstadoAvance (quedan deprecados hasta el cleanup de PR9).
+ * Cada GrupoHitoLegado usado por un Tablero se convierte en una Actividad
+ * de ese Tablero; cada HitoLegado se convierte en una Tarea de esa
+ * Actividad, preservando peso/real_inicio/real_fin y mapeando
+ * EstadoAvance.codigo al TaskStatus equivalente. No borra ni modifica
+ * HitoLegado/GrupoHitoLegado/EstadoAvance (quedan deprecados hasta el
+ * cleanup de PR9).
  *
  * Idempotente: usa updateOrCreate() con clave natural (tablero_id+nombre
  * para Actividad, tablero_hito_id para Tarea) — correr el comando varias
  * veces no duplica filas. Se matchea por tablero_hito_id (no por
- * actividad_id+code): code se deriva de TableroHito.item, un TextInput
+ * actividad_id+code): code se deriva de HitoLegado.item, un TextInput
  * libre — matchear por code hacía que editar item entre dos corridas
  * dejara huérfana la Tarea existente y creara una nueva en su lugar
  * (hallazgo de /revisor, ver ADR 0012). tablero_hito_id es estable
- * independiente de lo que se edite en TableroHito (aunque ahora ese
+ * independiente de lo que se edite en HitoLegado (aunque ahora ese
  * relation manager quedó de solo lectura, ver ADR 0012).
  */
 class MigrarHitosATareasCommand extends Command
 {
     protected $signature = 'inspeccion:migrar-hitos-a-tareas';
 
-    protected $description = 'Migra TableroHito/GrupoHito existentes a Actividad/Tarea (ADR 0009 §2.5, PR5)';
+    protected $description = 'Migra HitoLegado/GrupoHitoLegado existentes a Actividad/Tarea (ADR 0009 §2.5, PR5)';
 
     /**
      * EstadoAvance.codigo -> TaskStatus. 'na' se mapea a Bloqueada:
@@ -64,26 +65,26 @@ class MigrarHitosATareasCommand extends Command
 
         DB::transaction(function () use (&$actividadesCreadas, &$tareasCreadas, &$tareasActualizadas) {
             Tablero::query()
-                ->with(['tableroHitos.grupoHito', 'tableroHitos.estadoAvance'])
+                ->with(['hitosLegados.grupoHitoLegado', 'hitosLegados.estadoAvance'])
                 ->each(function (Tablero $tablero) use (&$actividadesCreadas, &$tareasCreadas, &$tareasActualizadas) {
-                    $actividadesPorGrupo = $tablero->tableroHitos
-                        ->pluck('grupoHito')
+                    $actividadesPorGrupo = $tablero->hitosLegados
+                        ->pluck('grupoHitoLegado')
                         ->unique('id')
                         ->sortBy('orden')
-                        ->mapWithKeys(function (GrupoHito $grupoHito) use ($tablero, &$actividadesCreadas) {
+                        ->mapWithKeys(function (GrupoHitoLegado $grupoHitoLegado) use ($tablero, &$actividadesCreadas) {
                             $actividad = Actividad::withoutEvents(fn () => Actividad::query()->updateOrCreate(
-                                ['tablero_id' => $tablero->id, 'nombre' => $grupoHito->nombre],
-                                ['orden' => $grupoHito->orden],
+                                ['tablero_id' => $tablero->id, 'nombre' => $grupoHitoLegado->nombre],
+                                ['orden' => $grupoHitoLegado->orden],
                             ));
 
                             if ($actividad->wasRecentlyCreated) {
                                 $actividadesCreadas++;
                             }
 
-                            return [$grupoHito->id => $actividad];
+                            return [$grupoHitoLegado->id => $actividad];
                         });
 
-                    $tablero->tableroHitos->each(function (TableroHito $hito) use ($tablero, $actividadesPorGrupo, &$tareasCreadas, &$tareasActualizadas) {
+                    $tablero->hitosLegados->each(function (HitoLegado $hito) use ($tablero, $actividadesPorGrupo, &$tareasCreadas, &$tareasActualizadas) {
                         $actividad = $actividadesPorGrupo->get($hito->grupo_hito_id);
                         $codigo = $hito->estadoAvance->codigo;
 
@@ -99,7 +100,7 @@ class MigrarHitosATareasCommand extends Command
                         // silencio.
                         if (! array_key_exists($codigo, self::MAPA_ESTADO)) {
                             throw new RuntimeException(
-                                "TableroHito #{$hito->id} (tablero '{$tablero->tag}', item '{$hito->item}') tiene ".
+                                "HitoLegado #{$hito->id} (tablero '{$tablero->tag}', item '{$hito->item}') tiene ".
                                 "estado_avance.codigo = '{$codigo}', que no está mapeado a ningún TaskStatus. ".
                                 'Agregalo a MigrarHitosATareasCommand::MAPA_ESTADO antes de re-correr el comando.'
                             );

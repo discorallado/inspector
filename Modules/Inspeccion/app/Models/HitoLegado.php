@@ -7,11 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class TableroHito extends Model
+/**
+ * Sistema viejo (deprecado desde ADR 0009/0011, pendiente de drop en
+ * PR9). Antes "TableroHito" — renombrado para que quede claro que NO es
+ * parte de la jerarquía Tablero -> Actividad -> Tarea portada de axon,
+ * es un árbol paralelo que cuelga de Tablero por separado.
+ */
+class HitoLegado extends Model
 {
     use HasFactory;
 
-    protected $table = 'tablero_hitos';
+    protected $table = 'hitos_legados';
 
     protected $fillable = [
         'organization_id',
@@ -45,9 +51,9 @@ class TableroHito extends Model
         return $this->belongsTo(Tablero::class);
     }
 
-    public function grupoHito(): BelongsTo
+    public function grupoHitoLegado(): BelongsTo
     {
-        return $this->belongsTo(GrupoHito::class);
+        return $this->belongsTo(GrupoHitoLegado::class, 'grupo_hito_id');
     }
 
     public function estadoAvance(): BelongsTo

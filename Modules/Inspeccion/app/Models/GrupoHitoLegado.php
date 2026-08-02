@@ -6,11 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class GrupoHito extends Model
+/**
+ * Sistema viejo (deprecado desde ADR 0009/0011, pendiente de drop en
+ * PR9). Antes "GrupoHito" — ver HitoLegado para el porqué del rename.
+ */
+class GrupoHitoLegado extends Model
 {
     use HasFactory;
 
-    protected $table = 'grupo_hitos';
+    protected $table = 'grupos_hitos_legados';
 
     protected $fillable = [
         'organization_id',
@@ -26,8 +30,8 @@ class GrupoHito extends Model
         ];
     }
 
-    public function tableroHitos(): HasMany
+    public function hitosLegados(): HasMany
     {
-        return $this->hasMany(TableroHito::class);
+        return $this->hasMany(HitoLegado::class, 'grupo_hito_id');
     }
 }

@@ -14,8 +14,8 @@ use Modules\Inspeccion\Filament\Resources\Tableros\Pages\TableroGanttChart;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\TableroKanbanBoard;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ActividadesRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ControlCambiosRelationManager;
+use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\HitosLegadosRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ObservacionesRelationManager;
-use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\TableroHitosRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\Schemas\TableroForm;
 use Modules\Inspeccion\Filament\Resources\Tableros\Tables\TablerosTable;
 use Modules\Inspeccion\Models\Tablero;
@@ -59,7 +59,7 @@ class TableroResource extends Resource
     {
         return [
             ActividadesRelationManager::class,
-            TableroHitosRelationManager::class,
+            HitosLegadosRelationManager::class,
             ObservacionesRelationManager::class,
             ControlCambiosRelationManager::class,
         ];

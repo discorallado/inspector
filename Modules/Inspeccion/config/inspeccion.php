@@ -22,7 +22,7 @@ return [
     'permisos' => [
         'tablero.ver' => ['super_admin', 'ingeniero', 'supervisor', 'tecnico', 'calidad'],
         'tablero.gestionar' => ['super_admin', 'ingeniero'],
-        'tablero_hito.actualizar' => ['super_admin', 'ingeniero', 'tecnico'],
+        'hito_legado.actualizar' => ['super_admin', 'ingeniero', 'tecnico'],
         'tablero_actividad.gestionar' => ['super_admin', 'ingeniero'],
         'tablero_tarea.actualizar' => ['super_admin', 'ingeniero', 'tecnico'],
         'tablero_tarea.asignar' => ['super_admin', 'ingeniero', 'supervisor'],

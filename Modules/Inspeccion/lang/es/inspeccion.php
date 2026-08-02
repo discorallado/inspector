@@ -47,9 +47,9 @@ return [
         ],
     ],
 
-    'tablero_hito' => [
-        'singular' => 'Hito',
-        'plural' => 'Hitos',
+    'hito_legado' => [
+        'singular' => 'Hito (legado)',
+        'plural' => 'Hitos (legado)',
         'campos' => [
             'grupo_hito' => 'Grupo',
             'estado_avance' => 'Estado',
@@ -160,7 +160,7 @@ return [
         'campos' => [
             'visita_inspeccion' => 'Visita',
             'tablero' => 'Tablero',
-            'tablero_hito' => 'Hito',
+            'hito_legado' => 'Hito',
             'especialidad' => 'Especialidad',
             'tipo_observacion' => 'Tipo',
             'severidad' => 'Severidad',
@@ -219,7 +219,7 @@ return [
     ],
 
     'catalogos' => [
-        'grupo_hito' => 'Grupos de Hito',
+        'grupo_hito_legado' => 'Grupos de Hito (legado)',
         'estado_avance' => 'Estados de Avance',
         'especialidad' => 'Especialidades',
         'tipo_observacion' => 'Tipos de Observación',
