@@ -2,8 +2,8 @@
 
 return [
     'navigation' => [
-        'cluster_inspeccion_calidad' => 'Inspección de Calidad',
         'cluster_configuracion' => 'Configuración',
+        'grupo_inspeccion' => 'Inspección',
         'grupo_seguimiento_tableros' => 'Seguimiento de Tableros',
         'grupo_inspeccion_calidad' => 'Inspección de Calidad',
         'grupo_control_cambios' => 'Control de Cambios',
@@ -44,6 +44,11 @@ return [
             'fabricante' => 'Fabricante',
             'oc_contrato' => 'OC / Contrato',
             'avance_global' => 'Avance global',
+            'avance_calculado_at' => 'Avance calculado el',
+        ],
+        'secciones' => [
+            'datos' => 'Datos del tablero',
+            'avance' => 'Avance',
         ],
     ],
 
@@ -196,18 +201,18 @@ return [
         ],
     ],
 
-    'checklist' => [
+    'prueba' => [
         'item_library' => [
-            'singular' => 'Ítem de Checklist',
-            'plural' => 'Ítems de Checklist',
+            'singular' => 'Ítem de Prueba',
+            'plural' => 'Ítems de Prueba',
         ],
         'template' => [
-            'singular' => 'Plantilla de Checklist',
-            'plural' => 'Plantillas de Checklist',
+            'singular' => 'Plantilla de Prueba',
+            'plural' => 'Plantillas de Prueba',
         ],
         'ejecucion' => [
-            'singular' => 'Checklist de Inspección',
-            'plural' => 'Checklists de Inspección',
+            'singular' => 'Prueba',
+            'plural' => 'Pruebas',
         ],
         'campos' => [
             'categoria' => 'Categoría',

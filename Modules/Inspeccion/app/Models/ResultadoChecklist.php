@@ -18,8 +18,8 @@ class ResultadoChecklist extends Model
         'orden',
     ];
 
-    public function checklistEjecucionItems(): HasMany
+    public function pruebaItems(): HasMany
     {
-        return $this->hasMany(ChecklistEjecucionItem::class);
+        return $this->hasMany(PruebaItem::class);
     }
 }

@@ -73,8 +73,8 @@ class Tablero extends Model
         return $this->belongsToMany(VisitaInspeccion::class, 'tablero_visita_inspeccion');
     }
 
-    public function checklistEjecuciones(): HasMany
+    public function pruebas(): HasMany
     {
-        return $this->hasMany(ChecklistEjecucion::class);
+        return $this->hasMany(Prueba::class);
     }
 }

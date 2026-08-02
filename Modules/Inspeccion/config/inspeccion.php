@@ -29,7 +29,7 @@ return [
         'visita_inspeccion.gestionar' => ['super_admin', 'supervisor', 'calidad'],
         'observacion.crear' => ['super_admin', 'supervisor', 'calidad'],
         'observacion.cerrar' => ['super_admin', 'ingeniero', 'supervisor', 'calidad'],
-        'checklist_ejecucion.completar' => ['super_admin', 'supervisor', 'calidad'],
+        'prueba.completar' => ['super_admin', 'supervisor', 'calidad'],
         'control_cambio.proponer' => ['super_admin', 'ingeniero', 'tecnico'],
         'control_cambio.decidir' => ['super_admin', 'supervisor'],
         'control_cambio.implementar' => ['super_admin', 'ingeniero'],

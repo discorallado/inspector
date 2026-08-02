@@ -16,6 +16,7 @@ use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ActividadesR
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ControlCambiosRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\HitosLegadosRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ObservacionesRelationManager;
+use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\PruebasRelationManager;
 use Modules\Inspeccion\Filament\Resources\Tableros\Schemas\TableroForm;
 use Modules\Inspeccion\Filament\Resources\Tableros\Tables\TablerosTable;
 use Modules\Inspeccion\Models\Tablero;
@@ -26,7 +27,7 @@ class TableroResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'tag';
 
@@ -59,9 +60,10 @@ class TableroResource extends Resource
     {
         return [
             ActividadesRelationManager::class,
-            HitosLegadosRelationManager::class,
             ObservacionesRelationManager::class,
+            PruebasRelationManager::class,
             ControlCambiosRelationManager::class,
+            HitosLegadosRelationManager::class,
         ];
     }
 

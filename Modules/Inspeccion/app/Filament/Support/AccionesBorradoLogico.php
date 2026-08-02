@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * Wiring estándar de Filament para modelos con SoftDeletes: filtro de
  * papelera + acciones de restaurar/eliminar definitivamente. Se usa en las
  * 4 entidades históricas del módulo (Visita, Observacion, ControlCambio,
- * ChecklistEjecucion) para que "eliminar" nunca sea la única opción.
+ * Prueba) para que "eliminar" nunca sea la única opción.
  */
 class AccionesBorradoLogico
 {

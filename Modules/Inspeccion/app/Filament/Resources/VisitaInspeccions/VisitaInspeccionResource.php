@@ -7,25 +7,26 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Modules\Inspeccion\Filament\Concerns\PerteneceAInspeccionCalidad;
 use Modules\Inspeccion\Filament\Resources\VisitaInspeccions\Pages\CreateVisitaInspeccion;
 use Modules\Inspeccion\Filament\Resources\VisitaInspeccions\Pages\EditVisitaInspeccion;
 use Modules\Inspeccion\Filament\Resources\VisitaInspeccions\Pages\ListVisitaInspeccions;
-use Modules\Inspeccion\Filament\Resources\VisitaInspeccions\RelationManagers\ChecklistEjecucionesRelationManager;
 use Modules\Inspeccion\Filament\Resources\VisitaInspeccions\RelationManagers\ObservacionesRelationManager;
 use Modules\Inspeccion\Filament\Resources\VisitaInspeccions\Schemas\VisitaInspeccionForm;
 use Modules\Inspeccion\Filament\Resources\VisitaInspeccions\Tables\VisitaInspeccionsTable;
 use Modules\Inspeccion\Models\VisitaInspeccion;
 
+/**
+ * Sin ítem propio en el menú: se llega a una Visita siempre desde su
+ * Proyecto (ProyectoResource > VisitasRelationManager) — ver ADR del
+ * reordenamiento de sidebar.
+ */
 class VisitaInspeccionResource extends Resource
 {
-    use PerteneceAInspeccionCalidad;
-
     protected static ?string $model = VisitaInspeccion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?int $navigationSort = 2;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $recordTitleAttribute = 'fecha';
 
@@ -53,7 +54,6 @@ class VisitaInspeccionResource extends Resource
     {
         return [
             ObservacionesRelationManager::class,
-            ChecklistEjecucionesRelationManager::class,
         ];
     }
 

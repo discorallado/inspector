@@ -7,7 +7,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Modules\Inspeccion\Filament\Concerns\PerteneceAInspeccionCalidad;
 use Modules\Inspeccion\Filament\Resources\Observacions\Pages\CreateObservacion;
 use Modules\Inspeccion\Filament\Resources\Observacions\Pages\EditObservacion;
 use Modules\Inspeccion\Filament\Resources\Observacions\Pages\ListObservacions;
@@ -16,21 +15,28 @@ use Modules\Inspeccion\Filament\Resources\Observacions\Tables\ObservacionsTable;
 use Modules\Inspeccion\Models\Observacion;
 
 /**
- * Página por defecto del cluster Inspección de Calidad: el listado
- * transversal de observaciones/sugerencias/consultas es lo primero que
- * necesita ver un control de calidad (vencidas, pendientes críticas, etc.).
+ * Único ítem del grupo de sidebar "Inspección" (ADR de reordenamiento):
+ * el listado transversal de observaciones (todos los tableros, con
+ * filtros por tablero/tipo/estado/especialidad ya existentes en
+ * ObservacionsTable) es la vista que Calidad necesita mantener aunque
+ * Tablero/VisitaInspeccion pasen a drilldown — ver el ADR para el porqué
+ * de reusar este resource completo en vez de construir una página nueva
+ * de solo lectura en paralelo.
  */
 class ObservacionResource extends Resource
 {
-    use PerteneceAInspeccionCalidad;
-
     protected static ?string $model = Observacion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'descripcion';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('inspeccion.navigation.grupo_inspeccion');
+    }
 
     public static function getModelLabel(): string
     {

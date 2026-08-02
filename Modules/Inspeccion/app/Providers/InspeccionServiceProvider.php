@@ -7,10 +7,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Gate;
 use Modules\Inspeccion\Console\Commands\MigrarHitosATareasCommand;
 use Modules\Inspeccion\Models\Actividad;
-use Modules\Inspeccion\Models\ChecklistEjecucion;
-use Modules\Inspeccion\Models\ChecklistEjecucionItem;
-use Modules\Inspeccion\Models\ChecklistItemLibrary;
-use Modules\Inspeccion\Models\ChecklistTemplate;
 use Modules\Inspeccion\Models\ControlCambio;
 use Modules\Inspeccion\Models\Especialidad;
 use Modules\Inspeccion\Models\EstadoAvance;
@@ -20,6 +16,10 @@ use Modules\Inspeccion\Models\GrupoHitoLegado;
 use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Observacion;
 use Modules\Inspeccion\Models\Proyecto;
+use Modules\Inspeccion\Models\Prueba;
+use Modules\Inspeccion\Models\PruebaItem;
+use Modules\Inspeccion\Models\PruebaItemLibrary;
+use Modules\Inspeccion\Models\PruebaTemplate;
 use Modules\Inspeccion\Models\ResultadoChecklist;
 use Modules\Inspeccion\Models\Severidad;
 use Modules\Inspeccion\Models\Tablero;
@@ -33,12 +33,12 @@ use Modules\Inspeccion\Observers\ObservacionObserver;
 use Modules\Inspeccion\Observers\TareaObserver;
 use Modules\Inspeccion\Policies\ActividadPolicy;
 use Modules\Inspeccion\Policies\CatalogoPolicy;
-use Modules\Inspeccion\Policies\ChecklistEjecucionItemPolicy;
-use Modules\Inspeccion\Policies\ChecklistEjecucionPolicy;
 use Modules\Inspeccion\Policies\ControlCambioPolicy;
 use Modules\Inspeccion\Policies\HitoLegadoPolicy;
 use Modules\Inspeccion\Policies\ObservacionPolicy;
 use Modules\Inspeccion\Policies\ProyectoPolicy;
+use Modules\Inspeccion\Policies\PruebaItemPolicy;
+use Modules\Inspeccion\Policies\PruebaPolicy;
 use Modules\Inspeccion\Policies\TableroPolicy;
 use Modules\Inspeccion\Policies\TareaPolicy;
 use Modules\Inspeccion\Policies\UserPolicy;
@@ -111,8 +111,8 @@ class InspeccionServiceProvider extends ModuleServiceProvider
         Gate::policy(VisitaInspeccion::class, VisitaInspeccionPolicy::class);
         Gate::policy(Observacion::class, ObservacionPolicy::class);
         Gate::policy(ControlCambio::class, ControlCambioPolicy::class);
-        Gate::policy(ChecklistEjecucion::class, ChecklistEjecucionPolicy::class);
-        Gate::policy(ChecklistEjecucionItem::class, ChecklistEjecucionItemPolicy::class);
+        Gate::policy(Prueba::class, PruebaPolicy::class);
+        Gate::policy(PruebaItem::class, PruebaItemPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Actividad::class, ActividadPolicy::class);
         Gate::policy(Tarea::class, TareaPolicy::class);
@@ -127,8 +127,8 @@ class InspeccionServiceProvider extends ModuleServiceProvider
             EstadoCambio::class,
             ResultadoChecklist::class,
             TransicionEstadoPermitida::class,
-            ChecklistItemLibrary::class,
-            ChecklistTemplate::class,
+            PruebaItemLibrary::class,
+            PruebaTemplate::class,
         ] as $catalogo) {
             Gate::policy($catalogo, CatalogoPolicy::class);
         }

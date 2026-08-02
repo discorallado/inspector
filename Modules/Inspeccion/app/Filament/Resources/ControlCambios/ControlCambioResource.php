@@ -14,13 +14,18 @@ use Modules\Inspeccion\Filament\Resources\ControlCambios\Schemas\ControlCambioFo
 use Modules\Inspeccion\Filament\Resources\ControlCambios\Tables\ControlCambiosTable;
 use Modules\Inspeccion\Models\ControlCambio;
 
+/**
+ * Sin ítem propio en el menú (ADR de reordenamiento de sidebar): se llega
+ * a un Control de Cambios siempre desde su Tablero
+ * (TableroResource > ControlCambiosRelationManager).
+ */
 class ControlCambioResource extends Resource
 {
     protected static ?string $model = ControlCambio::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?int $navigationSort = 3;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static ?string $recordTitleAttribute = 'descripcion';
 

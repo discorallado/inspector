@@ -2,8 +2,6 @@
 
 use App\Models\User;
 use Modules\Inspeccion\Database\Seeders\InspeccionDatabaseSeeder;
-use Modules\Inspeccion\Models\ChecklistEjecucion;
-use Modules\Inspeccion\Models\ChecklistTemplate;
 use Modules\Inspeccion\Models\ControlCambio;
 use Modules\Inspeccion\Models\EstadoAvance;
 use Modules\Inspeccion\Models\EstadoCambio;
@@ -12,6 +10,8 @@ use Modules\Inspeccion\Models\GrupoHitoLegado;
 use Modules\Inspeccion\Models\HitoLegado;
 use Modules\Inspeccion\Models\Observacion;
 use Modules\Inspeccion\Models\Proyecto;
+use Modules\Inspeccion\Models\Prueba;
+use Modules\Inspeccion\Models\PruebaTemplate;
 use Modules\Inspeccion\Models\Tablero;
 use Modules\Inspeccion\Models\VisitaInspeccion;
 
@@ -38,24 +38,28 @@ beforeEach(function () {
         'estado_cambio_id' => EstadoCambio::query()->where('codigo', 'propuesto')->value('id'),
     ]);
 
-    $this->ejecucion = ChecklistEjecucion::crearDesdeTemplate([
+    $this->prueba = Prueba::crearDesdeTemplate([
         'visita_inspeccion_id' => $this->visita->id,
         'tablero_id' => $this->tablero->id,
-    ], ChecklistTemplate::first());
+    ], PruebaTemplate::first());
 });
 
 it('carga la edición de tablero con sus relation managers', function () {
     $this->actingAs($this->admin)->get("/admin/tableros/{$this->tablero->id}/edit")->assertSuccessful();
 });
 
+it('carga la edición de proyecto con su relation manager de visitas', function () {
+    $this->actingAs($this->admin)->get("/admin/proyectos/{$this->proyecto->id}/edit")->assertSuccessful();
+});
+
 it('carga la edición de visita de inspección con sus relation managers', function () {
-    $this->actingAs($this->admin)->get("/admin/inspeccion-calidad/visita-inspeccions/{$this->visita->id}/edit")->assertSuccessful();
+    $this->actingAs($this->admin)->get("/admin/visita-inspeccions/{$this->visita->id}/edit")->assertSuccessful();
 });
 
-it('carga la edición de checklist ejecucion con sus ítems', function () {
-    $this->actingAs($this->admin)->get("/admin/inspeccion-calidad/checklist-ejecucions/{$this->ejecucion->id}/edit")->assertSuccessful();
+it('carga la edición de una prueba con sus ítems', function () {
+    $this->actingAs($this->admin)->get("/admin/pruebas/{$this->prueba->id}/edit")->assertSuccessful();
 });
 
-it('carga la edición de checklist template con sus ítems', function () {
-    $this->actingAs($this->admin)->get('/admin/configuracion/checklist-templates/'.ChecklistTemplate::first()->id.'/edit')->assertSuccessful();
+it('carga la edición de plantilla de prueba con sus ítems', function () {
+    $this->actingAs($this->admin)->get('/admin/configuracion/prueba-templates/'.PruebaTemplate::first()->id.'/edit')->assertSuccessful();
 });

@@ -52,9 +52,9 @@ class VisitaInspeccion extends Model
         return $this->hasMany(Observacion::class);
     }
 
-    public function checklistEjecuciones(): HasMany
+    public function pruebas(): HasMany
     {
-        return $this->hasMany(ChecklistEjecucion::class);
+        return $this->hasMany(Prueba::class);
     }
 
     public function estadoGeneral(): string

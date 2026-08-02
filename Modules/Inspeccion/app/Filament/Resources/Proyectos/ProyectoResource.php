@@ -10,15 +10,16 @@ use Filament\Tables\Table;
 use Modules\Inspeccion\Filament\Resources\Proyectos\Pages\CreateProyecto;
 use Modules\Inspeccion\Filament\Resources\Proyectos\Pages\EditProyecto;
 use Modules\Inspeccion\Filament\Resources\Proyectos\Pages\ListProyectos;
+use Modules\Inspeccion\Filament\Resources\Proyectos\RelationManagers\VisitasRelationManager;
 use Modules\Inspeccion\Filament\Resources\Proyectos\Schemas\ProyectoForm;
 use Modules\Inspeccion\Filament\Resources\Proyectos\Tables\ProyectosTable;
 use Modules\Inspeccion\Models\Proyecto;
 
 /**
- * Sin ítem propio en el menú: Proyecto es un stub de un campo (ver
- * CLAUDE.md §3) y se crea inline desde el Select de "Proyecto" en los
- * formularios de Tablero y VisitaInspeccion. El recurso sigue existiendo
- * por si hace falta editarlo/eliminarlo directamente.
+ * Nav reactivada (ADR de reordenamiento de sidebar): Proyecto pasa a ser
+ * el primer nivel de drilldown (Proyecto -> Tablero, Proyecto -> Visitas),
+ * ya no es un stub oculto — sigue siendo un modelo mínimo (CLAUDE.md §3),
+ * eso no cambió.
  */
 class ProyectoResource extends Resource
 {
@@ -26,7 +27,7 @@ class ProyectoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static bool $shouldRegisterNavigation = false;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'nombre';
 
@@ -53,7 +54,7 @@ class ProyectoResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            VisitasRelationManager::class,
         ];
     }
 
