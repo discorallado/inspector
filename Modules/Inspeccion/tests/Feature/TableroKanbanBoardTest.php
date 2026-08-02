@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 use Modules\Inspeccion\Database\Seeders\EstadoAvanceSeeder;
 use Modules\Inspeccion\Database\Seeders\EstadoCambioSeeder;
@@ -153,4 +154,40 @@ it('el botón Ver Kanban del listado de Tableros enlaza a la ruta /kanban', func
     $html = $this->actingAs($user)->get('/admin/tableros')->getContent();
 
     expect($html)->toContain("/admin/tableros/{$this->tablero->id}/kanban");
+});
+
+/**
+ * A diferencia de AuthorizationException (ver el comentario más abajo en
+ * este archivo), Livewire::test() SÍ deja propagar ModelNotFoundException
+ * tal cual al test — solo excluye Http/AuthorizationException de "sin
+ * manejo" (RequestBroker::temporarilyDisableExceptionHandlingAndMiddleware).
+ * En producción esto se resuelve normal a un 404 (el ExceptionHandler de
+ * Laravel sí la maneja fuera del contexto de test).
+ */
+it('no mueve una tarea que pertenece a OTRO tablero (bug de scope encontrado por /revisor)', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $otroTablero = Tablero::factory()->for(Proyecto::factory())->create();
+    $otraActividad = Actividad::factory()->for($otroTablero)->create();
+    $tareaAjena = Tarea::factory()->for($otraActividad)->create(['status' => TaskStatus::Pendiente]);
+
+    expect(fn () => Livewire::test(TableroKanbanBoard::class, ['record' => $this->tablero->id])
+        ->call('updateTareaStatus', (string) $tareaAjena->id, TaskStatus::EnProgreso->value))
+        ->toThrow(ModelNotFoundException::class);
+
+    expect($tareaAjena->fresh()->status)->toBe(TaskStatus::Pendiente);
+});
+
+it('un status inexistente en el enum responde 422 en vez de un 500', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $tarea = Tarea::factory()->for($this->actividad)->create(['status' => TaskStatus::Pendiente]);
+
+    Livewire::test(TableroKanbanBoard::class, ['record' => $this->tablero->id])
+        ->call('updateTareaStatus', (string) $tarea->id, 'no-existe')
+        ->assertStatus(422);
+
+    expect($tarea->fresh()->status)->toBe(TaskStatus::Pendiente);
 });

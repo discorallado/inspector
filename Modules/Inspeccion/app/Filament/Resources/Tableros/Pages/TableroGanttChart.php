@@ -4,6 +4,7 @@ namespace Modules\Inspeccion\Filament\Resources\Tableros\Pages;
 
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Renderless;
 use Modules\Inspeccion\Filament\Resources\Tableros\TableroResource;
 use Modules\Inspeccion\Models\Actividad;
@@ -156,22 +157,36 @@ class TableroGanttChart extends Page
     {
         $this->authorize('update', $this->record);
 
-        foreach ($actividadIds as $index => $id) {
-            Actividad::query()
-                ->where('id', $id)
-                ->where('tablero_id', $this->record->id)
-                ->update(['orden' => $index + 1]);
-        }
+        // ids de Actividad reales de ESTE tablero — tareaOrdenes[]->actividadId
+        // llega del cliente sin relación verificada con $actividadIds (son
+        // dos arrays separados en el payload). Sin este chequeo, un
+        // actividadId de OTRO tablero pasa igual el ->where('actividad_id', ...)
+        // de abajo y reordena tareas ajenas — /revisor lo encontró
+        // reproducido con un test.
+        $actividadIdsDelTablero = $this->record->actividades()->pluck('id');
 
-        // $tareaOrdenes = [['actividadId' => ..., 'tareaIds' => [...]], ...]
-        foreach ($tareaOrdenes as $grupo) {
-            foreach ($grupo['tareaIds'] as $index => $tareaId) {
-                Tarea::query()
-                    ->where('id', $tareaId)
-                    ->where('actividad_id', $grupo['actividadId'])
+        DB::transaction(function () use ($actividadIds, $tareaOrdenes, $actividadIdsDelTablero) {
+            foreach ($actividadIds as $index => $id) {
+                Actividad::query()
+                    ->where('id', $id)
+                    ->where('tablero_id', $this->record->id)
                     ->update(['orden' => $index + 1]);
             }
-        }
+
+            // $tareaOrdenes = [['actividadId' => ..., 'tareaIds' => [...]], ...]
+            foreach ($tareaOrdenes as $grupo) {
+                if (! $actividadIdsDelTablero->contains($grupo['actividadId'])) {
+                    continue;
+                }
+
+                foreach ($grupo['tareaIds'] as $index => $tareaId) {
+                    Tarea::query()
+                        ->where('id', $tareaId)
+                        ->where('actividad_id', $grupo['actividadId'])
+                        ->update(['orden' => $index + 1]);
+                }
+            }
+        });
     }
 
     #[Renderless]
@@ -182,6 +197,13 @@ class TableroGanttChart extends Page
         if (! str_starts_with($source, 'act-') && ! str_starts_with($target, 'act-')) {
             $origen = $this->tareaDelTablero($source);
             $destino = $this->tareaDelTablero($target);
+
+            // 0=FS 1=SS 2=FF 3=SF (ver la migración de tarea_links) — el
+            // cliente (dhtmlx) solo debería mandar estos 4, pero es un
+            // wire:call público, no una validación de formulario.
+            abort_unless(in_array($type, [0, 1, 2, 3], true), 422);
+
+            abort_if($origen->id === $destino->id, 422);
 
             $link = TareaLink::create([
                 'source_id' => $origen->id,

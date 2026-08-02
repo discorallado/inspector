@@ -189,3 +189,60 @@ it('el botón Ver Gantt del listado de Tableros enlaza a la ruta /gantt', functi
 
     expect($html)->toContain("/admin/tableros/{$this->tablero->id}/gantt");
 });
+
+it('persistirOrden no reordena tareas de un actividadId que pertenece a OTRO tablero (bug de scope encontrado por /revisor)', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $otroTablero = Tablero::factory()->for(Proyecto::factory())->create();
+    $actividadAjena = Actividad::factory()->for($otroTablero)->create();
+    $tareaAjena1 = Tarea::factory()->for($actividadAjena)->create(['orden' => 1]);
+    $tareaAjena2 = Tarea::factory()->for($actividadAjena)->create(['orden' => 2]);
+
+    Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->call('persistirOrden', [], [
+            ['actividadId' => (string) $actividadAjena->id, 'tareaIds' => [(string) $tareaAjena2->id, (string) $tareaAjena1->id]],
+        ]);
+
+    expect($tareaAjena1->fresh()->orden)->toBe(1)
+        ->and($tareaAjena2->fresh()->orden)->toBe(2);
+});
+
+it('agregarLink rechaza type fuera de 0-3', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $origen = Tarea::factory()->for($this->actividad)->create();
+    $destino = Tarea::factory()->for($this->actividad)->create();
+
+    Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->call('agregarLink', (string) $origen->id, (string) $destino->id, 99)
+        ->assertStatus(422);
+
+    expect(TareaLink::query()->count())->toBe(0);
+});
+
+it('agregarLink rechaza una tarea vinculada consigo misma', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $this->actingAs($user);
+
+    $tarea = Tarea::factory()->for($this->actividad)->create();
+
+    Livewire::test(TableroGanttChart::class, ['record' => $this->tablero->id])
+        ->call('agregarLink', (string) $tarea->id, (string) $tarea->id, 0)
+        ->assertStatus(422);
+
+    expect(TareaLink::query()->count())->toBe(0);
+});
+
+it('la ruta /gantt responde 200 para un tablero SIN tareas (bug de gantt.init() en el estado vacío encontrado por /revisor)', function () {
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $tableroVacio = Tablero::factory()->for(Proyecto::factory())->create();
+
+    $html = $this->actingAs($user)
+        ->get("/admin/tableros/{$tableroVacio->id}/gantt")
+        ->assertSuccessful()
+        ->getContent();
+
+    expect($html)->not->toContain('id="dhx-gantt"');
+});

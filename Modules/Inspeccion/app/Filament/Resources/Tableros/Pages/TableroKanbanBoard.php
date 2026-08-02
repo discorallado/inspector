@@ -105,12 +105,25 @@ class TableroKanbanBoard extends Page
 
     public function updateTareaStatus(string $tareaId, string $status): void
     {
-        $tarea = Tarea::findOrFail($tareaId);
+        // Sin este scope, cualquier tareaId válido de CUALQUIER tablero
+        // pasa este findOrFail — TareaPolicy::update() es un Gate por rol,
+        // no por registro, así que el authorize() de abajo no detecta que
+        // la tarea no pertenece a $this->record. /revisor lo encontró: se
+        // podía mover una tarea de otro tablero operando desde este board.
+        $tarea = Tarea::query()
+            ->whereHas('actividad', fn ($q) => $q->where('tablero_id', $this->record->id))
+            ->findOrFail($tareaId);
 
         $this->authorize('update', $tarea);
 
+        $nuevoStatus = TaskStatus::tryFrom($status);
+
+        if (! $nuevoStatus) {
+            abort(422);
+        }
+
         try {
-            $tarea->update(['status' => TaskStatus::from($status)]);
+            $tarea->update(['status' => $nuevoStatus]);
         } catch (TransicionEstadoInvalidaException $e) {
             Notification::make()
                 ->danger()

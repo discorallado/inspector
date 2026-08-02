@@ -242,6 +242,19 @@
 
 @script
 <script>
+(function () {
+// Sin esto: cuando el tablero no tiene tareas, el <div id="dhx-gantt">
+// nunca se renderiza (vive dentro del bloque "empty($ganttData['data'])"
+// de arriba) pero este script SÍ corre siempre — gantt.init('dhx-gantt')
+// contra un elemento inexistente tira "Invalid value of the first
+// argument of gantt.init()". Mismo bug ya presente en el gantt-chart.blade.php
+// de axon (se heredó al portar) — acá se corrige. IIFE + return temprano
+// en vez de envolver todo el resto en un if: cambio mínimo, sin retocar
+// la indentación del resto del archivo.
+if (! document.getElementById('dhx-gantt')) {
+    return;
+}
+
 var _ganttData = @json($ganttData);
 
 /* ── Nombres de niveles (índice = orden en zoom.levels) ──────────────────── */
@@ -487,6 +500,7 @@ gantt.init('dhx-gantt');
 gantt.parse(_ganttData);
 
 syncButtons('week');
+})();
 </script>
 @endscript
 </x-filament-panels::page>
