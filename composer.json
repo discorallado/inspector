@@ -11,6 +11,7 @@
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
         "nwidart/laravel-modules": "^13.0",
+        "parallax/filament-comments": "^3.0",
         "relaticle/flowforge": "^4.0"
     },
     "require-dev": {

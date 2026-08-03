@@ -95,3 +95,53 @@ it('recalcula el avance del tablero al eliminar una tarea', function () {
 
     expect((float) $this->tablero->refresh()->avance_global)->toBe(100.0);
 });
+
+// -------------------------------------------------------------------
+// Peso ponderado por Actividad (ADR de peso ponderado)
+// -------------------------------------------------------------------
+
+it('sin peso en ninguna Actividad, calcular() cae a la fórmula plana de Tareas (fallback)', function () {
+    // $this->actividad (del beforeEach) no tiene peso — mismo escenario que
+    // todos los tests de arriba, acá se nombra explícito el comportamiento.
+    crearTarea($this->actividad, TaskStatus::Completada, 10);
+    crearTarea($this->actividad, TaskStatus::Pendiente, 30);
+
+    expect($this->actividad->peso)->toBeNull();
+    expect($this->calculador->calcular($this->tablero))->toBe(25.0);
+});
+
+it('con peso en las Actividades, calcular() pondera entre Actividades usando su propio avance()', function () {
+    $actividadA = Actividad::factory()->for($this->tablero)->create(['peso' => 10]);
+    $actividadB = Actividad::factory()->for($this->tablero)->create(['peso' => 30]);
+
+    // avance(A) = 100% (única tarea completada)
+    crearTarea($actividadA, TaskStatus::Completada, 5);
+    // avance(B) = 0% (única tarea pendiente)
+    crearTarea($actividadB, TaskStatus::Pendiente, 5);
+
+    // (10×100 + 30×0) / 40 = 25%
+    expect($this->calculador->calcular($this->tablero))->toBe(25.0);
+});
+
+it('una Actividad sin peso asignado no participa del ponderado por Actividad, aunque otras sí tengan peso', function () {
+    $actividadConPeso = Actividad::factory()->for($this->tablero)->create(['peso' => 10]);
+    $actividadSinPeso = Actividad::factory()->for($this->tablero)->create(['peso' => null]);
+
+    crearTarea($actividadConPeso, TaskStatus::Completada, 5);
+    // Esta actividad tiene peso de sobra en sus Tareas, pero al no tener
+    // actividad.peso asignado queda afuera del ponderado por Actividad.
+    crearTarea($actividadSinPeso, TaskStatus::Pendiente, 1000);
+
+    expect($this->calculador->calcular($this->tablero))->toBe(100.0);
+});
+
+it('una Actividad con peso pero sin avance() propio (sin tareas con peso) no participa del ponderado', function () {
+    $actividadConAvance = Actividad::factory()->for($this->tablero)->create(['peso' => 10]);
+    $actividadSinAvance = Actividad::factory()->for($this->tablero)->create(['peso' => 20]);
+
+    crearTarea($actividadConAvance, TaskStatus::Completada, 5);
+    // Sin tareas -> avance() es null -> se excluye pese a tener peso.
+
+    expect($actividadSinAvance->avance())->toBeNull();
+    expect($this->calculador->calcular($this->tablero))->toBe(100.0);
+});

@@ -35,11 +35,31 @@ class TareaObserver
 
     public function saved(Tarea $tarea): void
     {
-        $this->calculador->recalcularYGuardar($tarea->actividad->tablero);
+        $this->recalcularAvanceDelTablero($tarea);
     }
 
     public function deleted(Tarea $tarea): void
     {
-        $this->calculador->recalcularYGuardar($tarea->actividad->tablero);
+        $this->recalcularAvanceDelTablero($tarea);
+    }
+
+    /**
+     * $tarea->actividad (belongsTo sin withTrashed) devuelve null si la
+     * Actividad dueña está soft-deleted — pasa en el árbol, donde se puede
+     * dejar una Actividad en la papelera con sus Tareas todavía debajo y
+     * seguir operando sobre esas Tareas (editar, soft-delete). Sin este
+     * withTrashed(), acceder a ->tablero sobre null tronaba con un
+     * ErrorException real, reproducido borrando una Tarea de una Actividad
+     * ya eliminada.
+     */
+    private function recalcularAvanceDelTablero(Tarea $tarea): void
+    {
+        $actividad = $tarea->actividad()->withTrashed()->first();
+
+        if (! $actividad) {
+            return;
+        }
+
+        $this->calculador->recalcularYGuardar($actividad->tablero);
     }
 }

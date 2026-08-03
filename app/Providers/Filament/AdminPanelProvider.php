@@ -34,7 +34,6 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Orange,
             ])
             ->maxContentWidth(Width::Full)
-
             ->globalSearch(position: GlobalSearchPosition::Sidebar)
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
