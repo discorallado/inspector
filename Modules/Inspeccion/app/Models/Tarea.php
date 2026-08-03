@@ -5,14 +5,16 @@ namespace Modules\Inspeccion\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Inspeccion\Enums\TaskPriority;
 use Modules\Inspeccion\Enums\TaskStatus;
+use Parallax\FilamentComments\Models\Traits\HasFilamentComments;
 
 class Tarea extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasFilamentComments, SoftDeletes;
 
     protected $table = 'tareas';
 
@@ -61,6 +63,29 @@ class Tarea extends Model
         return $this->belongsTo(Actividad::class);
     }
 
+    /**
+     * `code` ya no es un TextInput libre (pedido del usuario: la
+     * numeración TP-1.1, 1.2, etc. se recalcula sola al crear/insertar/
+     * reordenar) — vive acá como la única fuente de verdad del formato,
+     * para que ActividadesRelationManager no la repita en cada acción que
+     * la necesita.
+     */
+    public static function generarCode(string $tableroTag, int $actividadOrden, int $tareaOrden): string
+    {
+        return "{$tableroTag}-{$actividadOrden}.{$tareaOrden}";
+    }
+
+    /**
+     * Portado de axon (Task::isOverdue()). Mismo criterio que
+     * Observacion::estaVencida(): vencida solo si de verdad no se completó.
+     */
+    public function isOverdue(): bool
+    {
+        return $this->due_date !== null
+            && $this->due_date->isPast()
+            && ! $this->status->isCompleted();
+    }
+
     public function parentTarea(): BelongsTo
     {
         return $this->belongsTo(Tarea::class, 'parent_tarea_id');
@@ -101,5 +126,23 @@ class Tarea extends Model
     public function linksComoDestino(): HasMany
     {
         return $this->hasMany(TareaLink::class, 'target_id');
+    }
+
+    /**
+     * Portado de axon (Task::predecessors()/successors()): forma cómoda de
+     * leer el mismo grafo que linksComoOrigen()/linksComoDestino() ya
+     * exponen, para el multi-select de predecesoras en el modal de editar
+     * (TareaDependencyService).
+     */
+    public function predecessors(): BelongsToMany
+    {
+        return $this->belongsToMany(Tarea::class, 'tarea_links', 'target_id', 'source_id')
+            ->withPivot('id', 'type');
+    }
+
+    public function successors(): BelongsToMany
+    {
+        return $this->belongsToMany(Tarea::class, 'tarea_links', 'source_id', 'target_id')
+            ->withPivot('id', 'type');
     }
 }

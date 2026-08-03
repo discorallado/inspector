@@ -50,7 +50,10 @@ class Tablero extends Model
 
     public function actividades(): HasMany
     {
-        return $this->hasMany(Actividad::class)->orderBy('orden');
+        // orden tiebreak: por default(0) sin setear, empatan todas — id
+        // como segundo criterio da un orden estable (insertion order) en
+        // vez de depender del orden físico no garantizado de la BD.
+        return $this->hasMany(Actividad::class)->orderBy('orden')->orderBy('id');
     }
 
     public function tareas(): HasManyThrough

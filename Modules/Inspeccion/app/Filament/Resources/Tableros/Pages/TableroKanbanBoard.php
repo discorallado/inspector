@@ -64,7 +64,9 @@ class TableroKanbanBoard extends Page
         $query = Tarea::query()
             ->whereHas('actividad', fn ($q) => $q->where('tablero_id', $this->record->id))
             ->with('actividad')
-            ->orderBy('orden');
+            ->withCount('filamentComments')
+            ->orderBy('orden')
+            ->orderBy('id');
 
         if ($this->filterActividad) {
             $query->where('actividad_id', $this->filterActividad);
@@ -101,6 +103,15 @@ class TableroKanbanBoard extends Page
         return collect(TaskPriority::cases())
             ->mapWithKeys(fn (TaskPriority $p) => [$p->value => $p->getLabel()])
             ->all();
+    }
+
+    public function urlDetalleTarea(Tarea $tarea): string
+    {
+        return TableroResource::getUrl('actividad-detalle', [
+            'record' => $this->record,
+            'actividadId' => $tarea->actividad_id,
+            'focus' => $tarea->id,
+        ]);
     }
 
     public function updateTareaStatus(string $tareaId, string $status): void

@@ -3,10 +3,10 @@
 namespace Modules\Inspeccion\Filament\Resources\Tableros\Pages;
 
 use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
 use Modules\Inspeccion\Filament\Resources\Tableros\TableroResource;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoFisico;
 
 class EditTablero extends EditRecord
 {
@@ -23,7 +23,11 @@ class EditTablero extends EditRecord
                 ->label(__('inspeccion.tarea.gantt.title'))
                 ->icon(Heroicon::OutlinedChartBar)
                 ->url(fn (): string => TableroResource::getUrl('gantt', ['record' => $this->record])),
-            DeleteAction::make(),
+            Action::make('actividadesResumen')
+                ->label(__('inspeccion.actividad.resumen.title'))
+                ->icon(Heroicon::OutlinedTableCells)
+                ->url(fn (): string => TableroResource::getUrl('actividades-resumen', ['record' => $this->record])),
+            AccionesBorradoFisico::eliminar(),
         ];
     }
 }

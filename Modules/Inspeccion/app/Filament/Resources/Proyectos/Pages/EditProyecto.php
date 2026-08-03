@@ -2,9 +2,9 @@
 
 namespace Modules\Inspeccion\Filament\Resources\Proyectos\Pages;
 
-use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Modules\Inspeccion\Filament\Resources\Proyectos\ProyectoResource;
+use Modules\Inspeccion\Filament\Support\AccionesBorradoFisico;
 
 class EditProyecto extends EditRecord
 {
@@ -13,7 +13,7 @@ class EditProyecto extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            AccionesBorradoFisico::eliminar(),
         ];
     }
 }

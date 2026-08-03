@@ -103,13 +103,24 @@
                                     </p>
                                 @endif
 
-                                {{-- Pie: actividad + peso --}}
+                                {{-- Pie: actividad + peso + comentarios --}}
                                 <div class="mt-3 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
                                     <span class="truncate">{{ $tarea->actividad->nombre }}</span>
 
-                                    @if ($tarea->peso !== null)
-                                        <span class="shrink-0 font-semibold">{{ $tarea->peso }}%</span>
-                                    @endif
+                                    <div class="flex shrink-0 items-center gap-2">
+                                        @if ($tarea->peso !== null)
+                                            <span class="font-semibold">{{ $tarea->peso }}%</span>
+                                        @endif
+
+                                        <a
+                                            href="{{ $this->urlDetalleTarea($tarea) }}"
+                                            title="{{ __('inspeccion.tarea.detalle.ver_comentarios') }}"
+                                            class="flex items-center gap-0.5 rounded px-1 py-0.5 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                        >
+                                            <x-filament::icon icon="heroicon-o-chat-bubble-left-ellipsis" class="h-3.5 w-3.5" />
+                                            {{ $tarea->filament_comments_count }}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @empty

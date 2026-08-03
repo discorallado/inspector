@@ -7,9 +7,11 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Modules\Inspeccion\Filament\Resources\Tableros\Pages\ActividadDetalle;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\CreateTablero;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\EditTablero;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\ListTableros;
+use Modules\Inspeccion\Filament\Resources\Tableros\Pages\TableroActividadesResumen;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\TableroGanttChart;
 use Modules\Inspeccion\Filament\Resources\Tableros\Pages\TableroKanbanBoard;
 use Modules\Inspeccion\Filament\Resources\Tableros\RelationManagers\ActividadesRelationManager;
@@ -75,6 +77,8 @@ class TableroResource extends Resource
             'edit' => EditTablero::route('/{record}/edit'),
             'kanban' => TableroKanbanBoard::route('/{record}/kanban'),
             'gantt' => TableroGanttChart::route('/{record}/gantt'),
+            'actividad-detalle' => ActividadDetalle::route('/{record}/actividades/{actividadId}'),
+            'actividades-resumen' => TableroActividadesResumen::route('/{record}/actividades-resumen'),
         ];
     }
 }
