@@ -7,9 +7,49 @@
 ---
 
 ## Última actualización
-2026-08-04
+2026-08-03
 
 ## Módulo / feature en curso
+**ADR 0019-0023 implementados** (un solo commit grande, `7bbad35`,
+mergeado vía [PR #12](https://github.com/discorallado/inspector/pull/12)) —
+árbol Actividad→Tarea embebido en Tablero con CRUD 100% modal (ADR 0019),
+port parcial del `ActivityAccordion` de axon (ADR 0020, 7/10 gaps
+cerrados), comentarios vía `parallax/filament-comments` + página
+`ActividadDetalle` (ADR 0021), peso ponderado a nivel Actividad con
+fórmula de dos niveles + página de resumen (ADR 0022), y `code` de Tarea
+autocalculado + rediseño de modals/`TableroForm` con Sections (ADR 0023).
+Nada de esto pasó todavía por `/revisor` — es el próximo paso, ver
+abajo. Este bloque de trabajo no había quedado documentado en SESSION.md
+hasta ahora (el archivo se había quedado en el estado de PR6/ADR 0013).
+
+## `/revisor` sobre la cascada de `code` (ADR 0023) — 2 hallazgos críticos corregidos
+`reordenarTareas()` e `insertarTareaAction()` (`ActividadesRelationManager`)
+recalculaban `code` fila por fila sin evitar colisiones transitorias
+contra `unique(actividad_id, code)`: cualquier swap de dos Tareas o
+inserción con 2+ Tareas corridas pisaba el `code` todavía vigente de una
+fila sin procesar y reventaba la transacción entera con
+`QueryException 23000`. No lo detectaban los tests existentes porque
+`TareaFactory` genera codes tipo `TAR-0001` (no el formato real
+`{tag}-{actividad.orden}.{tarea.orden}`) — 2 tests nuevos que sí usan el
+formato real reproducen la falla contra el código viejo y pasan con el
+fix. Corregido con un patrón de dos fases (code temporal único por id,
+después el code definitivo) en ambos métodos. Suite completa: 221
+passed, 1 risky preexistente (sin fallas), Pint limpio.
+
+## Pendiente explícito post-ADR 0023
+- **`/revisor` sobre la cascada de recálculo de `code`** (crear, insertar
+  vía reorder, reordenar Actividad) — 3 puntos de recálculo que deben
+  mantenerse sincronizados, señalado como siguiente paso en el propio
+  ADR 0023, todavía no corrido.
+- Ítems 4/5/6 del feedback del usuario, diferidos a sus propios
+  `/arquitecto` (no son ajustes, son decisiones de arquitectura):
+  navegación con "Proyecto actual", tabla custom para pesos, rediseño UX
+  de `TablerosTable` y otras.
+- 3 de los 10 gaps de paridad contra `axon` (ADR 0020) siguen sin portar.
+- PR9 (cleanup de `HitoLegado`/`GrupoHitoLegado`/`EstadoAvance` y
+  `TableroHitosRelationManager`) sigue reservado, nunca se hizo.
+
+## Estado histórico (2026-08-04) — PR6 del ADR 0009 implementado, revisado y con cleanup
 **PR6 del ADR 0009 implementado, revisado y con cleanup** —
 `ActividadesRelationManager` + `TareasRelationManager` (Filament) y
 `CalculadorAvanceTablero` adaptado a sumar exclusivamente sobre
@@ -552,22 +592,22 @@ viejos. Detalle completo en el comentario de la clase
 (`Modules/Inspeccion/app/Services/TransicionEstadoGuard.php`).
 
 ## Próximo paso concreto
-`/ingeniero` — **PR7 del ADR 0009**: Kanban de `Tarea` (retoma
-`TaskStatus`/`TaskPriority`, que ya implementan `HasLabel` desde PR6—
-falta `HasColor`/`HasIcon` si el diseño del kanban los pide). Después:
-PR8 (Gantt DHTMLX) y PR9 (cleanup de `TableroHito`/`GrupoHito`/
-`EstadoAvance` y `TableroHitosRelationManager` — reservado a propósito,
-el usuario pidió no adelantarlo en la sesión de PR6). Ver
-[`0009-integracion-actividad-tarea-desde-axon.md`](Modules/Inspeccion/docs/adr/0009-integracion-actividad-tarea-desde-axon.md)
-§8 para el plan completo (PR4-PR9),
-[`0010`](Modules/Inspeccion/docs/adr/0010-pr4-actividad-tarea-modelo-de-datos.md),
-[`0011`](Modules/Inspeccion/docs/adr/0011-pr5-migracion-datos-hitos-a-tareas.md),
-[`0012`](Modules/Inspeccion/docs/adr/0012-fixes-checkpoint-pre-pr6.md) y
-[`0013`](Modules/Inspeccion/docs/adr/0013-pr6-actividades-relation-manager-y-calculador-tarea.md)
-para el detalle de lo implementado hasta PR6. La autonumeración de
-catálogos del ADR 0006 (los 9 simples, sin `TableroHito.item` que quedó
-cancelado) sigue pendiente pero sin relación con esto — se puede retomar
-en cualquier momento, no depende de PR4-PR9.
+`/revisor` sobre el diff de ADR 0019-0023 (commit `7bbad35`), con foco en
+la cascada de recálculo de `code` de Tarea (crear/insertar/reordenar) que
+el propio ADR 0023 señaló como el punto de más riesgo. Después: retomar
+los ítems 4/5/6 diferidos (navegación con Proyecto actual, tabla custom
+de pesos, rediseño UX de `TablerosTable`) vía `/arquitecto`, los 3 gaps
+de paridad con axon pendientes de ADR 0020, y PR9 (cleanup de
+`HitoLegado`/`GrupoHitoLegado`/`EstadoAvance` y
+`TableroHitosRelationManager`, reservado desde PR6). Ver
+[`0019`](Modules/Inspeccion/docs/adr/0019-arbol-actividad-tarea-modal-embebido.md),
+[`0020`](Modules/Inspeccion/docs/adr/0020-port-parcial-de-axon-activity-accordion.md),
+[`0021`](Modules/Inspeccion/docs/adr/0021-comentarios-en-actividad-y-tarea.md),
+[`0022`](Modules/Inspeccion/docs/adr/0022-peso-ponderado-por-actividad.md) y
+[`0023`](Modules/Inspeccion/docs/adr/0023-code-autogenerado-y-rediseno-de-forms.md)
+para el detalle completo. La autonumeración de catálogos del ADR 0006
+(los 9 simples, sin `TableroHito.item` que quedó cancelado) sigue
+pendiente pero sin relación con esto.
 
 ---
 
