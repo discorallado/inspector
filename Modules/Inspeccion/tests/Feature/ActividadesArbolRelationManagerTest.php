@@ -340,6 +340,26 @@ it('ingeniero puede reordenar Tareas dentro de la misma Actividad, y su code se 
     expect($t1->fresh()->code)->toBe(Tarea::generarCode($this->tablero->tag, 1, 2));
 });
 
+it('reordenarTareas no revienta contra unique(actividad_id, code) al swapear Tareas con code en formato real', function () {
+    // Hallazgo de /revisor sobre ADR 0023: con codes en el formato real
+    // ({tag}-{actividad.orden}.{tarea.orden}, no el "TAR-0001" de la
+    // factory por defecto), swapear dos Tareas hacía que el UPDATE de la
+    // primera pisara el code todavía vigente de la segunda, violando
+    // unique(actividad_id, code) y reventando la transacción entera.
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $actividad = Actividad::factory()->for($this->tablero)->create(['orden' => 1]);
+    $t1 = Tarea::factory()->for($actividad)->create(['orden' => 1, 'code' => Tarea::generarCode($this->tablero->tag, 1, 1)]);
+    $t2 = Tarea::factory()->for($actividad)->create(['orden' => 2, 'code' => Tarea::generarCode($this->tablero->tag, 1, 2)]);
+    $this->actingAs($user);
+
+    testArbol($this->tablero)->call('reordenarTareas', [$t2->id, $t1->id], $actividad->id);
+
+    expect($t2->fresh()->orden)->toBe(1);
+    expect($t1->fresh()->orden)->toBe(2);
+    expect($t2->fresh()->code)->toBe(Tarea::generarCode($this->tablero->tag, 1, 1));
+    expect($t1->fresh()->code)->toBe(Tarea::generarCode($this->tablero->tag, 1, 2));
+});
+
 it('reordenarTareas mueve una Tarea a otra Actividad del mismo Tablero (drag entre columnas), recalcula su code', function () {
     $user = User::factory()->create(['role' => 'ingeniero']);
     $origen = Actividad::factory()->for($this->tablero)->create(['orden' => 1]);
@@ -395,6 +415,38 @@ it('insertarTareaAction crea una Tarea después de la referencia, corre el orden
 
     expect($t2->fresh()->orden)->toBe(3);
     expect($t2->fresh()->code)->toBe(Tarea::generarCode($this->tablero->tag, 1, 3));
+});
+
+it('insertarTareaAction no revienta contra unique(actividad_id, code) con 2+ Tareas corridas en formato real', function () {
+    // Hallazgo de /revisor sobre ADR 0023: con 2+ Tareas posteriores al
+    // punto de inserción, el shift una-por-una pisaba el code todavía
+    // vigente de la siguiente antes de procesarla, violando
+    // unique(actividad_id, code) y reventando toda la inserción.
+    $user = User::factory()->create(['role' => 'ingeniero']);
+    $actividad = Actividad::factory()->for($this->tablero)->create(['orden' => 1]);
+    $t1 = Tarea::factory()->for($actividad)->create(['orden' => 1, 'code' => Tarea::generarCode($this->tablero->tag, 1, 1)]);
+    $t2 = Tarea::factory()->for($actividad)->create(['orden' => 2, 'code' => Tarea::generarCode($this->tablero->tag, 1, 2)]);
+    $t3 = Tarea::factory()->for($actividad)->create(['orden' => 3, 'code' => Tarea::generarCode($this->tablero->tag, 1, 3)]);
+    $this->actingAs($user);
+
+    testArbol($this->tablero)
+        ->mountAction('insertarTarea', arguments: ['id' => $t1->id, 'position' => 'after'])
+        ->setActionData([
+            'actividad_id' => $actividad->id,
+            'nombre' => 'Insertada con 2+ corridas',
+            'status' => TaskStatus::Pendiente->value,
+            'priority' => TaskPriority::Media->value,
+        ])
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    $nueva = Tarea::where('actividad_id', $actividad->id)->where('nombre', 'Insertada con 2+ corridas')->firstOrFail();
+    expect($nueva->orden)->toBe(2);
+    expect($nueva->code)->toBe(Tarea::generarCode($this->tablero->tag, 1, 2));
+    expect($t2->fresh()->orden)->toBe(3);
+    expect($t2->fresh()->code)->toBe(Tarea::generarCode($this->tablero->tag, 1, 3));
+    expect($t3->fresh()->orden)->toBe(4);
+    expect($t3->fresh()->code)->toBe(Tarea::generarCode($this->tablero->tag, 1, 4));
 });
 
 it('agendarFechasDesdeAnteriorAction sugiere start_date desde el due_date de la tarea anterior', function () {

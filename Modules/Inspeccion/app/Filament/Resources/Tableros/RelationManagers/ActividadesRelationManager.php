@@ -133,18 +133,40 @@ class ActividadesRelationManager extends RelationManager
 
         $tag = $this->getOwnerRecord()->tag;
 
-        DB::transaction(function () use ($orderedIds, $actividad, $tag): void {
+        // Ids validados de antemano (pertenecen a este Tablero) — hace
+        // falta la lista fija antes de tocar nada porque el UPDATE de
+        // fase 1 de abajo ya no puede filtrar por whereHas('actividad',
+        // tablero_id) fila por fila una vez que empezamos a mover
+        // actividad_id.
+        $idsValidos = Tarea::query()
+            ->whereIn('id', $orderedIds)
+            ->whereHas('actividad', fn ($query) => $query->where('tablero_id', $this->getOwnerRecord()->id))
+            ->pluck('id')
+            ->all();
+
+        DB::transaction(function () use ($orderedIds, $idsValidos, $actividad, $tag): void {
+            // Fase 1: code temporal único por id (nunca puede chocar con
+            // unique(actividad_id, code), que es real en BD) antes de
+            // reasignar los codes definitivos en fase 2. Sin esto, mover
+            // una Tarea a una posición cuyo code todavía ocupa otra Tarea
+            // sin procesar en este mismo loop revienta la transacción
+            // entera con un QueryException 23000 (hallazgo de /revisor).
+            foreach ($idsValidos as $id) {
+                Tarea::query()->where('id', $id)->update(['code' => "__tmp_reorden_{$id}__"]);
+            }
+
             foreach ($orderedIds as $index => $id) {
+                if (! in_array($id, $idsValidos, true)) {
+                    continue;
+                }
+
                 $orden = $index + 1;
 
-                Tarea::query()
-                    ->where('id', $id)
-                    ->whereHas('actividad', fn ($query) => $query->where('tablero_id', $this->getOwnerRecord()->id))
-                    ->update([
-                        'actividad_id' => $actividad->id,
-                        'orden' => $orden,
-                        'code' => Tarea::generarCode($tag, $actividad->orden, $orden),
-                    ]);
+                Tarea::query()->where('id', $id)->update([
+                    'actividad_id' => $actividad->id,
+                    'orden' => $orden,
+                    'code' => Tarea::generarCode($tag, $actividad->orden, $orden),
+                ]);
             }
         });
     }
@@ -395,17 +417,29 @@ class ActividadesRelationManager extends RelationManager
                 DB::transaction(function () use ($referencia, $nuevoOrden, $actividad, $tag, &$data): void {
                     // increment() + code embebe el orden -> hay que
                     // recorrer una por una para recalcular el code de
-                    // cada Tarea corrida, no solo su número.
-                    Tarea::query()
+                    // cada Tarea corrida, no solo su número. Dos fases
+                    // (code temporal único por id, después el code
+                    // definitivo) para no chocar contra el
+                    // unique(actividad_id, code) real de BD: sin esto, con
+                    // 2+ Tareas corridas la primera fila procesada pisaba
+                    // el code todavía vigente de la siguiente y la
+                    // transacción entera reventaba con un QueryException
+                    // 23000 (hallazgo de /revisor).
+                    $tareasAfectadas = Tarea::query()
                         ->where('actividad_id', $referencia->actividad_id)
                         ->where('orden', '>=', $nuevoOrden)
-                        ->get()
-                        ->each(function (Tarea $tarea) use ($actividad, $tag): void {
-                            $tarea->updateQuietly([
-                                'orden' => $tarea->orden + 1,
-                                'code' => Tarea::generarCode($tag, $actividad->orden, $tarea->orden + 1),
-                            ]);
-                        });
+                        ->get();
+
+                    $tareasAfectadas->each(
+                        fn (Tarea $tarea) => $tarea->updateQuietly(['code' => "__tmp_insertar_{$tarea->id}__"])
+                    );
+
+                    $tareasAfectadas->each(function (Tarea $tarea) use ($actividad, $tag): void {
+                        $tarea->updateQuietly([
+                            'orden' => $tarea->orden + 1,
+                            'code' => Tarea::generarCode($tag, $actividad->orden, $tarea->orden + 1),
+                        ]);
+                    });
 
                     $predecessors = $this->extraerPredecessors($data);
                     $data['orden'] = $nuevoOrden;
